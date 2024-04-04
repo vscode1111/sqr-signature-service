@@ -1,0 +1,14 @@
+{
+  "workbench.colorCustomizations": {
+    "tab.activeBackground": "#0c007a",
+    "tab.hoverBackground": "#1500d3",
+    "tab.activeBorderTop": "#33d402",
+    "activityBar.background": "#4A230B",
+    "titleBar.activeBackground": "#67310F",
+    "titleBar.activeForeground": "#FEF9F6"
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always"
+  }
+}
