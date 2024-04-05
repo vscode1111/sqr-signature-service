@@ -1,19 +1,10 @@
 import { Promisable } from '~common';
 import { DeployNetworkKey } from '../types';
+import { objectFactory } from './objects';
 
 export const deployNetworks: Array<DeployNetworkKey> = ['bsc'];
 
-export function objectFactory<K extends string, T>(array: K[], fn: (key: K) => T) {
-  let result: Record<K, T> = {} as any;
-
-  for (const item of array) {
-    result[item] = fn(item as K);
-  }
-
-  return result;
-}
-
-export function networkFactory<T>(fn: (network: DeployNetworkKey) => T) {
+export function networkObjectFactory<T>(fn: (network: DeployNetworkKey) => T) {
   return objectFactory(deployNetworks, fn);
 }
 

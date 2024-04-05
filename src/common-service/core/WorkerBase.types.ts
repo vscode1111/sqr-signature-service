@@ -1,6 +1,8 @@
+import { ServiceBroker } from 'moleculer';
 import { DeployNetworkKey } from '~common-service';
 
 export interface WorkerBaseConfig {
+  broker: ServiceBroker;
   network: DeployNetworkKey;
   workerName: string;
   tickDivider?: number;

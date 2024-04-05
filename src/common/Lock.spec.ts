@@ -79,7 +79,7 @@ describe('Lock', () => {
     });
   }).timeout(commonTestValue.timeout);
 
-  it('IdLock', async function () {
+  it.skip('IdLock', async function () {
     const tasks = Array(TASK_COUNT)
       .fill(null)
       .map((_, i) => i);

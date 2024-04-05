@@ -1,16 +1,25 @@
 import { Context } from 'moleculer';
-import { checkIfNumber, toDate } from '~common';
-import { HandlerFunc, checkIfNetwork, commonHandlers, web3Constants } from '~common-service';
+import { checkIfNumber, toDate, toWeiWithFixed } from '~common';
+import {
+  HandlerFunc,
+  MissingServicePrivateKey,
+  checkIfNetwork,
+  commonHandlers,
+  getChainConfig,
+  web3Constants,
+} from '~common-service';
 import { StatsData } from '~core';
 import { services } from '~index';
 import {
   GetBlockParams,
   GetBlockResponse,
+  GetLaunchpadDepositSignatureParams,
   GetNetworkAddressesResponse,
   GetNetworkParams,
+  GetSignatureWithdrawResponse,
   HandlerParams,
 } from '~types';
-import { getContractData } from '~utils';
+import { getContractData, signMessageForDeposit } from '~utils';
 
 const handlerFunc: HandlerFunc = () => ({
   actions: {
@@ -68,17 +77,84 @@ const handlerFunc: HandlerFunc = () => ({
       },
     },
 
-    'indexer.hard-reset': {
-      async handler(ctx: Context): Promise<void> {
-        ctx.broker.logger.info(`web3.handler: indexer.hard-reset`);
-        await services.multiSyncEngine.hardReset();
-      },
-    },
+    'network.launchpad.deposit-signature': {
+      params: {
+        network: { type: 'string' },
+        userId: { type: 'string' },
+        transactionId: { type: 'string' },
+        account: { type: 'string' },
+        amount: { type: 'number' },
+      } as HandlerParams<GetLaunchpadDepositSignatureParams>,
+      async handler(
+        ctx: Context<GetLaunchpadDepositSignatureParams>,
+      ): Promise<GetSignatureWithdrawResponse> {
+        const network = checkIfNetwork(ctx?.params?.network);
+        // const timeOut = TIME_OUT;
+        const { userId, transactionId, account, amount } = ctx?.params;
+        const context = services.getNetworkContext(network);
+        if (!context) {
+          throw new MissingServicePrivateKey();
+        }
 
-    'indexer.soft-reset': {
-      async handler(ctx: Context): Promise<void> {
-        ctx.broker.logger.info(`web3.handler: indexer.soft-reset`);
-        await services.multiSyncEngine.softReset();
+        const { owner } = context;
+        const { sqrDecimals } = getChainConfig(network);
+        const amountInWei = toWeiWithFixed(amount, sqrDecimals);
+
+        let timestampNow = 0;
+        let timestampLimit = 2147483647;
+
+        // if (ACCOUNT_TIME_BLOCKER) {
+        //   const [block, claimDelay] = await Promise.all([
+        //     services.getProvider(network).getBlockByNumber(web3Constants.latest),
+        //     sqrClaim.claimDelay(),
+        //   ]);
+        //   timestampNow = block.timestamp;
+        //   timestampLimit = timestampNow + timeOut;
+
+        //   const fundItemStatus = await getFundItemStatus(
+        //     account,
+        //     sqrClaim,
+        //     sqrDecimals,
+        //     timestampNow,
+        //     Number(claimDelay),
+        //   );
+
+        //   if (!fundItemStatus.permitted) {
+        //     const result: GetSignatureClaimResponse = {
+        //       error: 'ACCOUNT_TIME_BLOCKER_NOT_PASSED',
+        //       ...fundItemStatus,
+        //     };
+        //     return result;
+        //   }
+        // } else {
+        //   const [block] = await Promise.all([
+        //     services.getProvider(network).getBlockByNumber(web3Constants.latest),
+        //   ]);
+        //   timestampNow = block.timestamp;
+        //   timestampLimit = timestampNow + timeOut;
+        // }
+
+        const nonce = 0;
+
+        let result: GetSignatureWithdrawResponse = {} as any;
+        for (let i = 0; i < 1; i++) {
+          const signature = await signMessageForDeposit(
+            owner,
+            userId,
+            transactionId,
+            account,
+            amountInWei,
+            nonce,
+            timestampLimit,
+          );
+          result = {
+            signature,
+            amountInWei: String(amountInWei),
+            timestampNow,
+            timestampLimit,
+          };
+        }
+        return result;
       },
     },
   },

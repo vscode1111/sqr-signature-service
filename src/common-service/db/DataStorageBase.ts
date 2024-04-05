@@ -1,18 +1,21 @@
 import Bluebird from 'bluebird';
+import { ServiceBroker } from 'moleculer';
 import { DataSource, Repository } from 'typeorm';
 import { createDatabase } from 'typeorm-extension';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
-import { IdLock, Promisable, Started, Stopped, logInfo, toDate } from '~common';
-import { Block, Contract, Event, Network, Transaction } from '~db';
+import { IdLock, Promisable, Started, Stopped, toDate } from '~common';
+import { Block, Contract, Event, Network, Transaction } from '../../db/entities';
 import { GENESIS_BLOCK_NUMBER, INDEXER_CONCURRENCY_COUNT } from '../constants';
+import { ServiceBrokerBase } from '../core';
 import { DeployNetworkKey, GetBlockFn, GetTransactionByHashFn, Web3Event } from '../types';
+import { logInfo } from '../utils';
 import { findContracts, findNetwork } from './utils';
 
 const CREATED_DATABASE = false;
 
 const idLock = new IdLock();
 
-export class DataStorageBase implements Started, Stopped {
+export class DataStorageBase extends ServiceBrokerBase implements Started, Stopped {
   protected dataSourceOptions: PostgresConnectionOptions;
   protected dataSource!: DataSource;
   protected networkRepository!: Repository<Network>;
@@ -23,7 +26,8 @@ export class DataStorageBase implements Started, Stopped {
   protected getBlockFn!: GetBlockFn;
   protected getTransactionByHashFn!: GetTransactionByHashFn;
 
-  constructor(dataSourceOptions: PostgresConnectionOptions) {
+  constructor(broker: ServiceBroker, dataSourceOptions: PostgresConnectionOptions) {
+    super(broker);
     this.dataSourceOptions = dataSourceOptions;
     this.dataSource = new DataSource(this.dataSourceOptions);
     this.isDestroyed = false;
@@ -63,7 +67,7 @@ export class DataStorageBase implements Started, Stopped {
   }
 
   async start(): Promise<void> {
-    logInfo(`Connecting to database...`);
+    logInfo(this.broker, `Connecting to database...`);
     await this.initialize();
   }
 
@@ -79,7 +83,7 @@ export class DataStorageBase implements Started, Stopped {
   async hardReset(): Promise<void> {
     await this.dataSource.destroy();
     this.isDestroyed = true;
-    logInfo(`Database was dropped`);
+    logInfo(this.broker, `Database was dropped`);
   }
 
   async getNetwork(network: DeployNetworkKey): Promise<Network> {

@@ -7,7 +7,7 @@ export class SyncEngine implements Started {
 
   private workers: SyncWorkerControllers;
 
-  constructor({ network, provider }: SyncEngineConfig) {
+  constructor({ broker, network, provider }: SyncEngineConfig) {
     this.tickId = 0;
 
     this.workers = {
@@ -15,6 +15,7 @@ export class SyncEngine implements Started {
     };
 
     const monitoring = new MonitoringWorker({
+      broker,
       network,
       workerName: 'MonitoringWorker',
       tickDivider: 1,

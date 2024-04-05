@@ -37,6 +37,7 @@ declare module 'msq-moleculer-core' {
   }
 
   export interface Web3Config {
+    ownerPrivateKey: string;
     contracts: Record<string, Web3ConfigContract[]>;
     provider: Record<
       string,

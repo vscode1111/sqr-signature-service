@@ -8,8 +8,9 @@ export class MonitoringWorker extends WorkerBase<MonitoringWorkerStats | null> {
 
   private startDate: Date;
 
-  constructor({ network, workerName, tickDivider, provider }: MonitoringWorkerConfig) {
-    super(network, workerName, tickDivider);
+  constructor({ broker, network, workerName, tickDivider, provider }: MonitoringWorkerConfig) {
+    super(broker, network, workerName, tickDivider);
+
     this.provider = provider;
     this.startDate = new Date();
     this.reset();

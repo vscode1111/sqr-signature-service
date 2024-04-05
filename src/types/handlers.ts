@@ -1,5 +1,4 @@
 //Do not move to 'handlers' folder. Moleculer was configured to read code from there, not types
-
 import { ActionParams } from 'moleculer';
 import { Web3ConfigContract } from 'msq-moleculer-core';
 import { Web3Block } from '~common-service';
@@ -31,26 +30,10 @@ export interface GetBlockResponse extends Web3Block {
   timestampDate: Date;
 }
 
-export interface GetSecuritySharesParams {
-  secret: string;
-  shares: number;
-  threshold: number;
-}
-
-export interface SetWithdrawalRequestParams extends GetNetworkParams {
-  userId: string;
-  to: string;
-  amount: number;
-}
-
-export interface SetSecurityShareParams {
-  share: string;
-}
-
-export interface GetSignatureWithdrawParams extends GetNetworkParams {
+export interface GetLaunchpadDepositSignatureParams extends GetNetworkParams {
   userId: string;
   transactionId: string;
-  to: string;
+  account: string;
   amount: number;
 }
 

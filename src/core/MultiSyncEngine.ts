@@ -1,20 +1,25 @@
-import { Started, logInfo } from '~common';
+import { Started } from '~common';
 import {
   DeployNetworkKey,
   NetworkObject,
-  networkFactory,
+  ServiceBrokerBase,
+  logInfo,
+  networkObjectFactory,
   processNetworkObject,
 } from '~common-service';
 import { SyncEngineConfigBase } from './MultiSyncEngine.types';
 import { SyncEngine } from './SyncEngine';
 import { StatsData } from './SyncEngine.types';
 
-export class MultiSyncEngine implements Started {
+export class MultiSyncEngine extends ServiceBrokerBase implements Started {
   private syncEngines: NetworkObject<SyncEngine>;
 
-  constructor({ providers }: SyncEngineConfigBase) {
-    this.syncEngines = networkFactory((network) => {
+  constructor({ broker, providers }: SyncEngineConfigBase) {
+    super(broker);
+
+    this.syncEngines = networkObjectFactory((network) => {
       return new SyncEngine({
+        broker,
         provider: providers[network],
         network,
         workerName: 'SyncEngine',
@@ -23,7 +28,7 @@ export class MultiSyncEngine implements Started {
   }
 
   async start(): Promise<void> {
-    logInfo(`MultiSyncEngine init`);
+    logInfo(this.broker, `MultiSyncEngine init`);
     await processNetworkObject(this.syncEngines, (network) => this.syncEngines[network].start());
     this.sync();
   }

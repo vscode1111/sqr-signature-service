@@ -1,9 +1,12 @@
 import { computeAddress } from 'ethers';
+import { ServiceBroker } from 'moleculer';
 import sss from 'shamirs-secret-sharing';
-import { Initilized, Stopped, logConsoleError, logConsoleInfo } from '~common';
+import { Initilized, Stopped } from '~common';
 import { SecurityStatusResponse, SecurityStatusType } from '../types';
+import { logConsoleError, logConsoleInfo } from '../utils';
 
 interface SecurityBlockerConfig {
+  broker: ServiceBroker;
   privateKey: string;
   ownerAddress: string;
   threshold: number;
@@ -33,7 +36,7 @@ export class SecurityBlocker implements Initilized, Stopped {
 
   async init() {
     if (!this.config.privateKey) {
-      logConsoleError(`Security. Service is waiting shares...`);
+      logConsoleError(this.config.broker, `Security. Service is waiting shares...`);
       return;
     }
 
@@ -41,7 +44,7 @@ export class SecurityBlocker implements Initilized, Stopped {
   }
 
   async stop() {
-    logConsoleInfo(`Security. Service was stopped manually`);
+    logConsoleInfo(this.config.broker, `Security. Service was stopped manually`);
     this.status = 'waiting';
     this.shares = [];
     await this.config.onStop();
@@ -65,7 +68,7 @@ export class SecurityBlocker implements Initilized, Stopped {
         const address = computeAddress(`0x${privateKey}`);
 
         if (address === this.config.ownerAddress) {
-          logConsoleInfo('Security. Service was started');
+          logConsoleInfo(this.config.broker, 'Security. Service was started');
           await this.config.onStart(privateKey);
           this.status = 'running';
         }

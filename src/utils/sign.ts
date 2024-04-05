@@ -1,18 +1,19 @@
 import { Wallet } from 'ethers';
-import { signMessage } from '~common';
+import { signEncodedMessage } from '~common';
 
-export async function signMessageForWithdraw(
+export async function signMessageForDeposit(
   signer: Wallet,
   userId: string,
   transactionId: string,
-  to: string,
+  account: string,
   amount: bigint,
+  nonce: number,
   timestampLimit: number,
 ) {
-  return signMessage(
+  return signEncodedMessage(
     signer,
-    // userId,  transactionId,  to, amount,   timestampLimit
-    ['string', 'string', 'address', 'uint256', 'uint32'],
-    [userId, transactionId, to, amount, timestampLimit],
+    // userId,  transactionId, account, amount, nonce, timestampLimit
+    ['string', 'string', 'address', 'uint256', 'uint32', 'uint32'],
+    [userId, transactionId, account, amount, nonce, timestampLimit],
   );
 }

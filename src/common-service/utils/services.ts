@@ -1,18 +1,19 @@
-import Moleculer from 'moleculer';
+import { ServiceBroker } from 'moleculer';
 import ApiService, { ApiRouteSchema } from 'moleculer-web';
 import { buildBroker, mixins } from 'msq-moleculer-core';
 import path from 'path';
-import { logConsoleError, logConsoleInfo, parseError, parseStack } from '~common';
-import { cors } from '~common-service';
+import { parseError, parseStack } from '~common';
+import { cors } from '../api';
 import { config } from '../config';
 import { ServicesBase } from '../types';
+import { logConsoleError, logConsoleInfo } from '../utils';
 
 export async function bootstrapService<T extends ServicesBase>(
   routes: ApiRouteSchema[],
   channels: any,
-  startFn: () => Promise<T>,
+  startFn: (broker: ServiceBroker) => Promise<T>,
 ): Promise<{
-  broker: Moleculer.ServiceBroker;
+  broker: ServiceBroker;
   services: T;
 }> {
   const broker = buildBroker(config);
@@ -29,13 +30,13 @@ export async function bootstrapService<T extends ServicesBase>(
     channels,
   });
 
-  logConsoleInfo(`Service is running...`);
+  logConsoleInfo(broker, `Service is running...`);
 
   let services: T = {} as any;
 
   try {
-    services = await startFn();
-    catchAllExceptions(services);
+    services = await startFn(broker);
+    catchAllExceptions(broker, services);
     await broker.start();
   } catch (e) {
     broker.logger.error(`Start failed ${e}`);
@@ -48,11 +49,12 @@ export async function bootstrapService<T extends ServicesBase>(
   };
 }
 
-export function catchAllExceptions(services: ServicesBase) {
+export function catchAllExceptions(broker: ServiceBroker, services: ServicesBase) {
   process.on('uncaughtException', function (err) {
     try {
       const errorCount = services?.saveProcessError(err) ?? -1;
       logConsoleError(
+        broker,
         `Process caught exception #${errorCount}: ${parseError(err)} in ${parseStack(err)}`,
         err,
       );

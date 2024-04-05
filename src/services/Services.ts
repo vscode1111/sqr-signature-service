@@ -1,19 +1,23 @@
+import { ServiceBroker } from 'moleculer';
 import { Initilized, Started, Stopped, parseError, parseStack } from '~common';
 import {
   DeployNetworkKey,
   JsonRpcProvider,
   NetworkObject,
   Provider,
+  ServiceBrokerBase,
   ServicesBase,
   config,
-  networkFactory,
+  networkObjectFactory,
 } from '~common-service';
 import { getSqrSignatureContext } from '~contracts';
-import { KafkaNotifier, MultiSyncEngine } from '~core';
-import { Web3BusEvent } from '~types';
+import { MultiSyncEngine } from '~core';
 import { SqrSignatureContext } from './types';
 
-export class Services implements Initilized, Started, Stopped, ServicesBase {
+export class Services
+  extends ServiceBrokerBase
+  implements Initilized, Started, Stopped, ServicesBase
+{
   private started: boolean;
   private providers: NetworkObject<Provider>;
   private sqrSignatureContexts: NetworkObject<SqrSignatureContext> | null;
@@ -24,14 +28,15 @@ export class Services implements Initilized, Started, Stopped, ServicesBase {
   private errorCount: number;
 
   public multiSyncEngine: MultiSyncEngine;
-  public kafkaNotifier: KafkaNotifier<Web3BusEvent>;
 
-  constructor() {
+  constructor(broker: ServiceBroker) {
+    super(broker);
+
     this.started = false;
     this.lastErrorDate = undefined;
     this.errorCount = 0;
 
-    this.providers = networkFactory(
+    this.providers = networkObjectFactory(
       (network) =>
         new JsonRpcProvider(
           config.web3.provider[network].http as string,
@@ -41,15 +46,16 @@ export class Services implements Initilized, Started, Stopped, ServicesBase {
 
     this.sqrSignatureContexts = null;
 
-    this.kafkaNotifier = new KafkaNotifier(config.web3.kafka.outTopic);
-
     this.multiSyncEngine = new MultiSyncEngine({
+      broker,
       providers: this.providers,
     });
   }
 
   async init() {
-    this.sqrSignatureContexts = networkFactory((network) => getSqrSignatureContext(network));
+    this.sqrSignatureContexts = networkObjectFactory((network) =>
+      getSqrSignatureContext(network, config.web3.ownerPrivateKey),
+    );
     await this.start();
   }
 

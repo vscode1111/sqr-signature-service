@@ -1,4 +1,4 @@
-//VERSION 0.0.2;
+//VERSION 0.0.3;
 export * from './Lock';
 export * from './SpeedCounter';
 export * from './checks';
@@ -8,7 +8,6 @@ export * from './converts';
 export * from './cryptography';
 export * from './files';
 export * from './format';
-export * from './log';
 export * from './misc';
 export * from './reflection';
 export * from './reliability';

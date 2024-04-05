@@ -1,15 +1,24 @@
-import { Promisable, logError, parseError, parseStack } from '~common';
+import { ServiceBroker } from 'moleculer';
+import { Promisable, parseError, parseStack } from '~common';
 import { DeployNetworkKey, WorkerController } from '../types';
+import { logError } from '../utils';
+import { ServiceBrokerBase } from './ServiceBrokerBase';
 import { WorkerBaseStats } from './WorkerBase.types';
 
-export class WorkerBase<T = any> implements WorkerController<T> {
+export class WorkerBase<T = any> extends ServiceBrokerBase implements WorkerController<T> {
   protected network: DeployNetworkKey;
   protected workerName: string;
   protected statsDataBase!: WorkerBaseStats;
   protected tickDivider: number;
   protected started: boolean;
 
-  constructor(network: DeployNetworkKey, workerName: string, tickDivider = 30) {
+  constructor(
+    broker: ServiceBroker,
+    network: DeployNetworkKey,
+    workerName: string,
+    tickDivider = 30,
+  ) {
+    super(broker);
     this.network = network;
     this.workerName = workerName;
     this.tickDivider = tickDivider;
@@ -51,6 +60,7 @@ export class WorkerBase<T = any> implements WorkerController<T> {
       this.statsDataBase.lastError = parsedError;
       this.statsDataBase.lastErrorDate = new Date();
       logError(
+        this.broker,
         `${this.workerName} error #${this.statsDataBase.errorCount}: ${parsedError} in ${parseStack(
           e,
         )}`,
