@@ -7,13 +7,6 @@ export type StatusType = 'missing' | 'exists';
 
 export type HandlerParams<T> = Record<keyof T, ActionParams>;
 
-export interface CreateAccountParams {
-  userId: string;
-}
-export interface CreateAccountResponse {
-  address: string;
-}
-
 export interface GetNetworkParams {
   network: string;
 }
@@ -37,30 +30,14 @@ export interface GetLaunchpadDepositSignatureParams extends GetNetworkParams {
   amount: number;
 }
 
-export interface GetSignatureWithdrawResponse {
+export interface GetSignatureDepositResponse {
   signature: string;
   amountInWei: string;
+  nonce: number;
   timestampNow: number;
   timestampLimit: number;
 }
 
 export interface GetTransactionItemsParams extends GetNetworkParams {
   transactionIds: string[];
-}
-
-export interface GetTransactionItemsResponse {
-  transactionId: string;
-  status: StatusType;
-  tx?: string;
-  error?: string;
-}
-
-export interface GetFundItemsParams extends GetNetworkParams {
-  userIds: string[];
-}
-
-export interface GetFundItemsResponse {
-  userId: string;
-  status: StatusType;
-  error?: string;
 }

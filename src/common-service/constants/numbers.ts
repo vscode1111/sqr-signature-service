@@ -5,6 +5,8 @@ export const ZERO = toWei(0);
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
+export const UINT32_MAX = 4294967295;
+
 export const GENESIS_BLOCK_NUMBER = 1;
 
 export const INDEXER_CONCURRENCY_COUNT = 50;

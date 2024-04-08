@@ -43,6 +43,10 @@ export class MultiSyncEngine extends ServiceBrokerBase implements Started {
         );
   }
 
+  incrementSignatures(network: DeployNetworkKey) {
+    this.syncEngines[network].incrementSignatures();
+  }
+
   async hardReset(): Promise<void> {
     await processNetworkObject(this.syncEngines, (network) => this.syncEngines[network].reset());
     this.sync();

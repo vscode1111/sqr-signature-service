@@ -1,10 +1,13 @@
 import { Context } from 'moleculer';
 import { checkIfNumber, toDate, toWeiWithFixed } from '~common';
 import {
+  CacheMachine,
   HandlerFunc,
   MissingServicePrivateKey,
+  UINT32_MAX,
   checkIfNetwork,
   commonHandlers,
+  config,
   getChainConfig,
   web3Constants,
 } from '~common-service';
@@ -16,10 +19,17 @@ import {
   GetLaunchpadDepositSignatureParams,
   GetNetworkAddressesResponse,
   GetNetworkParams,
-  GetSignatureWithdrawResponse,
+  GetSignatureDepositResponse,
   HandlerParams,
 } from '~types';
 import { getContractData, signMessageForDeposit } from '~utils';
+
+const TIME_OUT = 86400;
+const CONSTANT_TIME_LIMIT = false;
+const BLOCK_KEY = 'BLOCK_KEY';
+const CACHE_TIME_OUT = 10_000;
+
+const cacheMachine = new CacheMachine();
 
 const handlerFunc: HandlerFunc = () => ({
   actions: {
@@ -87,7 +97,7 @@ const handlerFunc: HandlerFunc = () => ({
       } as HandlerParams<GetLaunchpadDepositSignatureParams>,
       async handler(
         ctx: Context<GetLaunchpadDepositSignatureParams>,
-      ): Promise<GetSignatureWithdrawResponse> {
+      ): Promise<GetSignatureDepositResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
         // const timeOut = TIME_OUT;
         const { userId, transactionId, account, amount } = ctx?.params;
@@ -96,65 +106,52 @@ const handlerFunc: HandlerFunc = () => ({
           throw new MissingServicePrivateKey();
         }
 
-        const { owner } = context;
+        const { owner, sqrSignatures } = context;
         const { sqrDecimals } = getChainConfig(network);
         const amountInWei = toWeiWithFixed(amount, sqrDecimals);
 
-        let timestampNow = 0;
-        let timestampLimit = 2147483647;
+        let nonce = -1;
+        let timestampNow = -1;
+        let timestampLimit = -1;
 
-        // if (ACCOUNT_TIME_BLOCKER) {
-        //   const [block, claimDelay] = await Promise.all([
-        //     services.getProvider(network).getBlockByNumber(web3Constants.latest),
-        //     sqrClaim.claimDelay(),
-        //   ]);
-        //   timestampNow = block.timestamp;
-        //   timestampLimit = timestampNow + timeOut;
+        const contractAddress = config.web3.contracts[network][0].address;
 
-        //   const fundItemStatus = await getFundItemStatus(
-        //     account,
-        //     sqrClaim,
-        //     sqrDecimals,
-        //     timestampNow,
-        //     Number(claimDelay),
-        //   );
-
-        //   if (!fundItemStatus.permitted) {
-        //     const result: GetSignatureClaimResponse = {
-        //       error: 'ACCOUNT_TIME_BLOCKER_NOT_PASSED',
-        //       ...fundItemStatus,
-        //     };
-        //     return result;
-        //   }
-        // } else {
-        //   const [block] = await Promise.all([
-        //     services.getProvider(network).getBlockByNumber(web3Constants.latest),
-        //   ]);
-        //   timestampNow = block.timestamp;
-        //   timestampLimit = timestampNow + timeOut;
-        // }
-
-        const nonce = 0;
-
-        let result: GetSignatureWithdrawResponse = {} as any;
-        for (let i = 0; i < 1; i++) {
-          const signature = await signMessageForDeposit(
-            owner,
-            userId,
-            transactionId,
-            account,
-            amountInWei,
-            nonce,
-            timestampLimit,
-          );
-          result = {
-            signature,
-            amountInWei: String(amountInWei),
-            timestampNow,
-            timestampLimit,
-          };
+        if (CONSTANT_TIME_LIMIT) {
+          nonce = Number(await sqrSignatures[contractAddress].getDepositNonce(userId));
+          timestampLimit = UINT32_MAX;
+        } else {
+          const [block, nonceRaw] = await Promise.all([
+            cacheMachine.call(
+              () => BLOCK_KEY,
+              () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
+              CACHE_TIME_OUT,
+            ),
+            sqrSignatures[contractAddress].getDepositNonce(userId),
+          ]);
+          nonce = Number(nonceRaw);
+          timestampNow = block.timestamp;
+          timestampLimit = timestampNow + TIME_OUT;
         }
-        return result;
+
+        const signature = await signMessageForDeposit(
+          owner,
+          userId,
+          transactionId,
+          account,
+          amountInWei,
+          nonce,
+          timestampLimit,
+        );
+
+        services.incrementSignatures(network);
+
+        return {
+          signature,
+          amountInWei: String(amountInWei),
+          nonce,
+          timestampNow,
+          timestampLimit,
+        };
       },
     },
   },

@@ -1,4 +1,4 @@
-import { calculateDiffSecFromNow, secondsToDhms } from '~common';
+import { SpeedCounter, calculateDiffSecFromNow, secondsToDhms } from '~common';
 import { Provider, WorkerBase } from '~common-service';
 import { MonitoringWorkerConfig, MonitoringWorkerStats } from './MonitoringWorker.types';
 
@@ -8,11 +8,16 @@ export class MonitoringWorker extends WorkerBase<MonitoringWorkerStats | null> {
 
   private startDate: Date;
 
+  private signatureCounter: SpeedCounter;
+
   constructor({ broker, network, workerName, tickDivider, provider }: MonitoringWorkerConfig) {
     super(broker, network, workerName, tickDivider);
 
     this.provider = provider;
     this.startDate = new Date();
+
+    this.signatureCounter = new SpeedCounter();
+
     this.reset();
   }
 
@@ -22,6 +27,9 @@ export class MonitoringWorker extends WorkerBase<MonitoringWorkerStats | null> {
     this.statsData.startDate = this.startDate;
     this.statsData.uptime = secondsToDhms(calculateDiffSecFromNow(this.startDate));
     this.statsData.tickId = tickId;
+
+    this.signatureCounter.store(this.statsData.signatures);
+    this.statsData.signaturesPerSec = Math.round(this.signatureCounter.stats().speed);
   }
 
   async getStats(): Promise<MonitoringWorkerStats | null> {
@@ -30,13 +38,18 @@ export class MonitoringWorker extends WorkerBase<MonitoringWorkerStats | null> {
     return { ...this.statsData, chainBlockNumber };
   }
 
+  incrementSignatures() {
+    this.statsData.signatures++;
+  }
+
   reset() {
     this.statsData = {
       uptime: '',
       tickId: 0,
       indexerLag: 0,
       chainBlockNumber: 0,
-      providerRequestsPerSec: 0,
+      signatures: 0,
+      signaturesPerSec: 0,
       startDate: this.startDate,
     };
   }

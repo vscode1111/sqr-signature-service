@@ -98,4 +98,8 @@ export class Services
       },
     };
   }
+
+  incrementSignatures(network: DeployNetworkKey) {
+    this.multiSyncEngine.incrementSignatures(network);
+  }
 }

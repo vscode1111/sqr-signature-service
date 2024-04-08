@@ -11,6 +11,7 @@ export interface MonitoringWorkerStats {
   tickId: number;
   indexerLag: number;
   chainBlockNumber: number;
-  providerRequestsPerSec: number;
+  signatures: number;
+  signaturesPerSec: number;
   startDate: Date;
 }

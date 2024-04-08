@@ -3,8 +3,8 @@
   "ts-node": { "files": true },
   "compilerOptions": {
     "baseUrl": "./src",
-    "noUnusedParameters": true,
-    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "sourceMap": false,

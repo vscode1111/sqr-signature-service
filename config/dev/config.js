@@ -35,6 +35,7 @@ module.exports = {
     password: 'znhcf94oi0arlz8q',
   },
   web3: {
+    ownerPrivateKey: 'e6f8fde90650d548c818fb3676987105e19b345e740429727a381b1237b31340',
     contracts: {
       bsc: [
         {
@@ -46,10 +47,10 @@ module.exports = {
     provider: {
       bsc: {
         http: 'https://rpc.ankr.com/bsc/0a92c9288ddd85181db59c48d2eae9d07873954be63e06893de5b4cbcb37842e',
-        blockNumberfilterSize: 0,
-        blockNumberRange: 2000,
-        blockNumberOffset: 10,
       },
+    },
+    scheduler: {
+      enable: true,
     },
   },
   integrations: {

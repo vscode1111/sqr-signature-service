@@ -19,7 +19,7 @@ function flattenRoutes(routes: ApiRouteSchema[]): ApiRouteSchema[] {
 
 export function modifyRoutes(routes: ApiRouteSchema[]): ApiRouteSchema[] {
   const newRoutes = flattenRoutes(routes);
-  return newRoutes.map((route) => ({ logging: true, ...route }));
+  return newRoutes.map((route) => ({ logging: false, ...route }));
 }
 
 export function getApiPrefix() {

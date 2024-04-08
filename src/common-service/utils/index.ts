@@ -1,3 +1,4 @@
+export * from './CacheMachine';
 export * from './axios';
 export * from './checks';
 export * from './log';

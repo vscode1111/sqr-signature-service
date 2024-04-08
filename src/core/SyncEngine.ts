@@ -38,7 +38,7 @@ export class SyncEngine implements Started {
     }
   }
 
-  public async sync() {
+  async sync() {
     for (const worker of Object.values(this.workers)) {
       worker?.execute(this.tickId);
     }
@@ -53,5 +53,9 @@ export class SyncEngine implements Started {
     }
 
     return workersStats;
+  }
+
+  incrementSignatures() {
+    this.workers.monitoring?.incrementSignatures();
   }
 }
