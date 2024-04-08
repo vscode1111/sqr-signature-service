@@ -7,6 +7,8 @@ export * from './utils';
 
 export const config: BaseConfig = require(path.join(appRoot.path, 'config'));
 
+console.log('init config:', config);
+
 export const isProdEnv = global.ENV === 'prod';
 export const isLocalOrDevEnv = ['local', 'dev'].includes(global.ENV);
 export const isBuildRun = toBoolean(global.BUILD);

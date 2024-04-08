@@ -5,8 +5,6 @@ import { App } from '~core';
 import { Services } from '~services';
 import { checkBaseConfig } from '~utils';
 
-console.log('config:', config);
-
 checkBaseConfig(config);
 
 export let services: Services;
