@@ -13,8 +13,6 @@ import { findContracts, findNetwork } from './utils';
 
 const CREATED_DATABASE = false;
 
-const idLock = new IdLock();
-
 export class DataStorageBase extends ServiceBrokerBase implements Started, Stopped {
   protected dataSourceOptions: PostgresConnectionOptions;
   protected dataSource!: DataSource;
@@ -25,12 +23,14 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
   protected isDestroyed: boolean;
   protected getBlockFn!: GetBlockFn;
   protected getTransactionByHashFn!: GetTransactionByHashFn;
+  protected idLock: IdLock;
 
   constructor(broker: ServiceBroker, dataSourceOptions: PostgresConnectionOptions) {
     super(broker);
     this.dataSourceOptions = dataSourceOptions;
     this.dataSource = new DataSource(this.dataSourceOptions);
     this.isDestroyed = false;
+    this.idLock = new IdLock();
   }
 
   getDataSource() {
@@ -103,7 +103,7 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     blockNumber: number,
     blockRepository: Repository<Block>,
   ) {
-    return await idLock.tryInvoke<Block>(`block_${blockNumber}`, async () => {
+    return this.idLock.tryInvoke<Block>(`block_${blockNumber}`, async () => {
       let dbBlock = await blockRepository.findOneBy({ number: blockNumber });
       if (!dbBlock) {
         const block = await this.getBlockFn(blockNumber);
@@ -147,7 +147,7 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     dbBlock: Block,
     transactionRepository: Repository<Transaction>,
   ) {
-    return await idLock.tryInvoke<Transaction>(`transaction_${transactionHash}`, async () => {
+    return this.idLock.tryInvoke<Transaction>(`transaction_${transactionHash}`, async () => {
       let dbTransaction = await transactionRepository.findOneBy({ hash: transactionHash });
       if (dbTransaction?.blockNumber === GENESIS_BLOCK_NUMBER) {
         await this.updateTransaction(
@@ -179,7 +179,7 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     eventRepository: Repository<Event>,
   ) {
     const topic0 = event.topics.length > 0 ? event.topics[0] : 'topic0';
-    return await idLock.tryInvoke(`event_${event.transactionHash}_${topic0}`, async () => {
+    return this.idLock.tryInvoke(`event_${event.transactionHash}_${topic0}`, async () => {
       const dbEvent = new Event();
 
       dbEvent.transactionHash = dbTransaction;

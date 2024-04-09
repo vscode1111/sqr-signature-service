@@ -99,7 +99,6 @@ const handlerFunc: HandlerFunc = () => ({
         ctx: Context<GetLaunchpadDepositSignatureParams>,
       ): Promise<GetSignatureDepositResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
-        // const timeOut = TIME_OUT;
         const { userId, transactionId, account, amount } = ctx?.params;
         const context = services.getNetworkContext(network);
         if (!context) {

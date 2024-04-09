@@ -23,7 +23,7 @@ export class CacheMachine {
         }
 
         this.map.delete(key);
-        console.log(`Deleted from cache ${key} key`);
+        // console.log(`${formatDate(new Date())} Deleted from cache ${key} key`);
       }, timeOut);
     }
 
