@@ -6,7 +6,8 @@ import { services } from '..';
 import { waitUntil } from '../common';
 import { runConcurrently } from './utils';
 
-const SRV_URL = 'http://127.0.0.1:3000';
+// const SRV_URL = 'http://127.0.0.1:3000';
+const SRV_URL = 'https://sqr.main.dev.msq.local/signature/api';
 
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
