@@ -2,8 +2,6 @@ import axios from 'axios';
 import https from 'https';
 import { v4 as uuidv4 } from 'uuid';
 import { GetLaunchpadDepositSignatureParams, GetSignatureDepositResponse } from '~types';
-import { services } from '..';
-import { waitUntil } from '../common';
 import { runConcurrently } from './utils';
 
 // const SRV_URL = 'http://127.0.0.1:3000';
@@ -37,19 +35,8 @@ async function getLaunchDepositSignature(): Promise<GetSignatureDepositResponse 
 }
 
 describe('performance', () => {
-  beforeEach(async function () {
-    if (!services?.isStarted) {
-      await services?.start();
-    }
-    await waitUntil(() => services?.isStarted);
-  });
-
-  afterEach(async function () {
-    await services?.stop();
-  });
-
-  it('check address', async () => {
-    console.log('checking address...');
+  it('checking rps', async () => {
+    console.log('checking rps...');
 
     await runConcurrently(
       async () => {
