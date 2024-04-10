@@ -25,7 +25,7 @@ import {
 import { getContractData, signMessageForDeposit } from '~utils';
 
 const TIME_OUT = 3600;
-const CONSTANT_TIME_LIMIT = true;
+const CONSTANT_TIME_LIMIT = false;
 const BLOCK_KEY = 'BLOCK_KEY';
 const CACHE_TIME_OUT = 60_000;
 
