@@ -4,8 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { GetLaunchpadDepositSignatureParams, GetSignatureDepositResponse } from '~types';
 import { runConcurrently } from './utils';
 
-// const SRV_URL = 'http://127.0.0.1:3000';
-const SRV_URL = 'https://sqr.main.dev.msq.local/signature/api';
+const SRV_URL = 'http://127.0.0.1:3000';
+// const SRV_URL = 'https://sqr.main.dev.msq.local/signature/api';
 
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
@@ -23,7 +23,8 @@ async function getLaunchDepositSignature(): Promise<GetSignatureDepositResponse 
   };
 
   const response = await axios.post<GetSignatureDepositResponse>(
-    `${SRV_URL}/bsc/launchpad/deposit-signature`,
+    // `${SRV_URL}/bsc/launchpad/deposit-signature`,
+    `${SRV_URL}/bsc/launchpad/deposit-signature-instant`,
     requestBody,
     {
       httpsAgent,
@@ -35,8 +36,8 @@ async function getLaunchDepositSignature(): Promise<GetSignatureDepositResponse 
 }
 
 describe('performance', () => {
-  it('checking rps', async () => {
-    console.log('checking rps...');
+  it('checking fetching signatures', async () => {
+    console.log('checking fetching signatures...');
 
     await runConcurrently(
       async () => {

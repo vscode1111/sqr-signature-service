@@ -12,6 +12,7 @@ export const routes: ApiRouteSchema[] = modifyRoutes([
       'GET blocks/:id': `${apiPrefix}network.blocks.id`,
       'POST transaction-items': `${apiPrefix}network.transaction-items.transaction-ids`,
       'POST launchpad/deposit-signature': `${apiPrefix}network.launchpad.deposit-signature`,
+      'POST launchpad/deposit-signature-instant': `${apiPrefix}network.launchpad.deposit-signature-instant`,
     },
   },
   {

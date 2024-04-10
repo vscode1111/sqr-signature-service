@@ -25,7 +25,7 @@ import {
 import { getContractData, signMessageForDeposit } from '~utils';
 
 const TIME_OUT = 3600;
-const CONSTANT_TIME_LIMIT = false;
+const CONSTANT_TIME_LIMIT = true;
 const BLOCK_KEY = 'BLOCK_KEY';
 const CACHE_TIME_OUT = 60_000;
 
@@ -131,6 +131,54 @@ const handlerFunc: HandlerFunc = () => ({
           timestampNow = block.timestamp;
           timestampLimit = timestampNow + TIME_OUT;
         }
+
+        const signature = await signMessageForDeposit(
+          owner,
+          userId,
+          transactionId,
+          account,
+          amountInWei,
+          nonce,
+          timestampLimit,
+        );
+
+        services.incrementSignatures(network);
+
+        return {
+          signature,
+          amountInWei: String(amountInWei),
+          nonce,
+          timestampNow,
+          timestampLimit,
+        };
+      },
+    },
+
+    'network.launchpad.deposit-signature-instant': {
+      params: {
+        network: { type: 'string' },
+        userId: { type: 'string' },
+        transactionId: { type: 'string' },
+        account: { type: 'string' },
+        amount: { type: 'number' },
+      } as HandlerParams<GetLaunchpadDepositSignatureParams>,
+      async handler(
+        ctx: Context<GetLaunchpadDepositSignatureParams>,
+      ): Promise<GetSignatureDepositResponse> {
+        const network = checkIfNetwork(ctx?.params?.network);
+        const { userId, transactionId, account, amount } = ctx?.params;
+        const context = services.getNetworkContext(network);
+        if (!context) {
+          throw new MissingServicePrivateKey();
+        }
+
+        const { owner } = context;
+        const { sqrDecimals } = getChainConfig(network);
+        const amountInWei = toWeiWithFixed(amount, sqrDecimals);
+
+        let nonce = 0;
+        let timestampNow = -1;
+        let timestampLimit = UINT32_MAX;
 
         const signature = await signMessageForDeposit(
           owner,
