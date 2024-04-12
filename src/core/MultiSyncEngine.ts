@@ -7,6 +7,7 @@ import {
   networkObjectFactory,
   processNetworkObject,
 } from '~common-service';
+import { StatsCallback } from './MonitoringWorker.types';
 import { SyncEngineConfigBase } from './MultiSyncEngine.types';
 import { SyncEngine } from './SyncEngine';
 import { StatsData } from './SyncEngine.types';
@@ -43,8 +44,8 @@ export class MultiSyncEngine extends ServiceBrokerBase implements Started {
         );
   }
 
-  incrementSignatures(network: DeployNetworkKey) {
-    this.syncEngines[network].incrementSignatures();
+  changeStats(network: DeployNetworkKey, callback: StatsCallback) {
+    this.syncEngines[network].changeStats(callback);
   }
 
   async hardReset(): Promise<void> {

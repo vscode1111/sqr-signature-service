@@ -1,6 +1,10 @@
 import { SpeedCounter, calculateDiffSecFromNow, secondsToDhms } from '~common';
 import { Provider, WorkerBase } from '~common-service';
-import { MonitoringWorkerConfig, MonitoringWorkerStats } from './MonitoringWorker.types';
+import {
+  MonitoringWorkerConfig,
+  MonitoringWorkerStats,
+  StatsCallback,
+} from './MonitoringWorker.types';
 
 export class MonitoringWorker extends WorkerBase<MonitoringWorkerStats | null> {
   public statsData!: MonitoringWorkerStats;
@@ -38,8 +42,9 @@ export class MonitoringWorker extends WorkerBase<MonitoringWorkerStats | null> {
     return { ...this.statsData, chainBlockNumber };
   }
 
-  incrementSignatures() {
-    this.statsData.signatures++;
+  changeStats(callback: StatsCallback) {
+    const partialStats = callback(this.statsData);
+    this.statsData = { ...this.statsData, ...partialStats };
   }
 
   reset() {
@@ -50,6 +55,7 @@ export class MonitoringWorker extends WorkerBase<MonitoringWorkerStats | null> {
       chainBlockNumber: 0,
       signatures: 0,
       signaturesPerSec: 0,
+      signatureErrors: 0,
       startDate: this.startDate,
     };
   }

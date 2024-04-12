@@ -36,6 +36,7 @@ export interface GetSignatureDepositResponse {
   nonce: number;
   timestampNow: number;
   timestampLimit: number;
+  dateLimit: Date;
 }
 
 export interface GetTransactionItemsParams extends GetNetworkParams {

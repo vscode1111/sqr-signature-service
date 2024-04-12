@@ -13,5 +13,8 @@ export interface MonitoringWorkerStats {
   chainBlockNumber: number;
   signatures: number;
   signaturesPerSec: number;
+  signatureErrors: number;
   startDate: Date;
 }
+
+export type StatsCallback = (stats: MonitoringWorkerStats) => Partial<MonitoringWorkerStats>;

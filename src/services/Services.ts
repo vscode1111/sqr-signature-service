@@ -11,7 +11,7 @@ import {
   networkObjectFactory,
 } from '~common-service';
 import { getSqrSignatureContext } from '~contracts';
-import { MultiSyncEngine } from '~core';
+import { MultiSyncEngine, StatsCallback } from '~core';
 import { SqrSignatureContext } from './types';
 
 export class Services
@@ -99,7 +99,7 @@ export class Services
     };
   }
 
-  incrementSignatures(network: DeployNetworkKey) {
-    this.multiSyncEngine.incrementSignatures(network);
+  changeStats(network: DeployNetworkKey, callback: StatsCallback) {
+    this.multiSyncEngine.changeStats(network, callback);
   }
 }

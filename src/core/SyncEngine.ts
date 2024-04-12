@@ -1,5 +1,6 @@
 import { Started } from '~common';
 import { MonitoringWorker } from './MonitoringWorker';
+import { StatsCallback } from './MonitoringWorker.types';
 import { StatsData, SyncEngineConfig, SyncWorkerControllers } from './SyncEngine.types';
 
 export class SyncEngine implements Started {
@@ -55,7 +56,7 @@ export class SyncEngine implements Started {
     return workersStats;
   }
 
-  incrementSignatures() {
-    this.workers.monitoring?.incrementSignatures();
+  changeStats(callback: StatsCallback) {
+    this.workers.monitoring?.changeStats(callback);
   }
 }

@@ -23,8 +23,8 @@ async function getLaunchDepositSignature(): Promise<GetSignatureDepositResponse 
   };
 
   const response = await axios.post<GetSignatureDepositResponse>(
-    // `${SRV_URL}/bsc/launchpad/deposit-signature`,
-    `${SRV_URL}/bsc/launchpad/deposit-signature-instant`,
+    `${SRV_URL}/bsc/launchpad/deposit-signature`,
+    // `${SRV_URL}/bsc/launchpad/deposit-signature-instant`,
     requestBody,
     {
       httpsAgent,

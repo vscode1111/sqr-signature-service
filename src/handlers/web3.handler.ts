@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { Context } from 'moleculer';
 import { checkIfNumber, toDate, toWeiWithFixed } from '~common';
 import {
@@ -25,6 +26,7 @@ import {
 import { getContractData, signMessageForDeposit } from '~utils';
 
 const TIME_OUT = 3600;
+const INDEXER_OFFSET = 600;
 const CONSTANT_TIME_LIMIT = false;
 const BLOCK_KEY = 'BLOCK_KEY';
 const CACHE_TIME_OUT = 60_000;
@@ -99,58 +101,70 @@ const handlerFunc: HandlerFunc = () => ({
         ctx: Context<GetLaunchpadDepositSignatureParams>,
       ): Promise<GetSignatureDepositResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
-        const { userId, transactionId, account, amount } = ctx?.params;
-        const context = services.getNetworkContext(network);
-        if (!context) {
-          throw new MissingServicePrivateKey();
+
+        try {
+          const network = checkIfNetwork(ctx?.params?.network);
+          const { userId, transactionId, account, amount } = ctx?.params;
+          const context = services.getNetworkContext(network);
+          if (!context) {
+            throw new MissingServicePrivateKey();
+          }
+
+          const { owner, sqrSignatures } = context;
+          const { sqrDecimals } = getChainConfig(network);
+          const amountInWei = toWeiWithFixed(amount, sqrDecimals);
+
+          let nonce = -1;
+          let timestampNow = -1;
+          let timestampLimit = -1;
+          let dateLimit = new Date(1900, 1, 1);
+
+          const contractAddress = config.web3.contracts[network][0].address;
+
+          if (CONSTANT_TIME_LIMIT) {
+            nonce = Number(await sqrSignatures[contractAddress].getDepositNonce(userId));
+            timestampLimit = UINT32_MAX;
+          } else {
+            const [block, nonceRaw] = await Promise.all([
+              cacheMachine.call(
+                () => BLOCK_KEY,
+                () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
+                CACHE_TIME_OUT,
+              ),
+              sqrSignatures[contractAddress].getDepositNonce(userId),
+            ]);
+            nonce = Number(nonceRaw);
+            timestampNow = block.timestamp;
+            timestampLimit = timestampNow + TIME_OUT;
+            dateLimit = dayjs()
+              .add(TIME_OUT + INDEXER_OFFSET, 'seconds')
+              .toDate();
+          }
+
+          const signature = await signMessageForDeposit(
+            owner,
+            userId,
+            transactionId,
+            account,
+            amountInWei,
+            nonce,
+            timestampLimit,
+          );
+
+          services.changeStats(network, (stats) => ({ signatures: ++stats.signatures }));
+
+          return {
+            signature,
+            amountInWei: String(amountInWei),
+            nonce,
+            timestampNow,
+            timestampLimit,
+            dateLimit,
+          };
+        } catch (e) {
+          services.changeStats(network, (stats) => ({ signatureErrors: ++stats.signatureErrors }));
+          throw e;
         }
-
-        const { owner, sqrSignatures } = context;
-        const { sqrDecimals } = getChainConfig(network);
-        const amountInWei = toWeiWithFixed(amount, sqrDecimals);
-
-        let nonce = -1;
-        let timestampNow = -1;
-        let timestampLimit = -1;
-
-        const contractAddress = config.web3.contracts[network][0].address;
-
-        if (CONSTANT_TIME_LIMIT) {
-          nonce = Number(await sqrSignatures[contractAddress].getDepositNonce(userId));
-          timestampLimit = UINT32_MAX;
-        } else {
-          const [block, nonceRaw] = await Promise.all([
-            cacheMachine.call(
-              () => BLOCK_KEY,
-              () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
-              CACHE_TIME_OUT,
-            ),
-            sqrSignatures[contractAddress].getDepositNonce(userId),
-          ]);
-          nonce = Number(nonceRaw);
-          timestampNow = block.timestamp;
-          timestampLimit = timestampNow + TIME_OUT;
-        }
-
-        const signature = await signMessageForDeposit(
-          owner,
-          userId,
-          transactionId,
-          account,
-          amountInWei,
-          nonce,
-          timestampLimit,
-        );
-
-        services.incrementSignatures(network);
-
-        return {
-          signature,
-          amountInWei: String(amountInWei),
-          nonce,
-          timestampNow,
-          timestampLimit,
-        };
       },
     },
 
@@ -166,39 +180,50 @@ const handlerFunc: HandlerFunc = () => ({
         ctx: Context<GetLaunchpadDepositSignatureParams>,
       ): Promise<GetSignatureDepositResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
-        const { userId, transactionId, account, amount } = ctx?.params;
-        const context = services.getNetworkContext(network);
-        if (!context) {
-          throw new MissingServicePrivateKey();
+
+        try {
+          const { userId, transactionId, account, amount } = ctx?.params;
+          const context = services.getNetworkContext(network);
+          if (!context) {
+            throw new MissingServicePrivateKey();
+          }
+
+          const { owner } = context;
+          const { sqrDecimals } = getChainConfig(network);
+          const amountInWei = toWeiWithFixed(amount, sqrDecimals);
+
+          let nonce = 0;
+          let timestampNow = -1;
+          let timestampLimit = UINT32_MAX;
+
+          const signature = await signMessageForDeposit(
+            owner,
+            userId,
+            transactionId,
+            account,
+            amountInWei,
+            nonce,
+            timestampLimit,
+          );
+
+          const dateLimit = dayjs()
+            .add(TIME_OUT + INDEXER_OFFSET, 'seconds')
+            .toDate();
+
+          services.changeStats(network, (stats) => ({ signatures: ++stats.signatures }));
+
+          return {
+            signature,
+            amountInWei: String(amountInWei),
+            nonce,
+            timestampNow,
+            timestampLimit,
+            dateLimit,
+          };
+        } catch (e) {
+          services.changeStats(network, (stats) => ({ signatureErrors: ++stats.signatureErrors }));
+          throw e;
         }
-
-        const { owner } = context;
-        const { sqrDecimals } = getChainConfig(network);
-        const amountInWei = toWeiWithFixed(amount, sqrDecimals);
-
-        let nonce = 0;
-        let timestampNow = -1;
-        let timestampLimit = UINT32_MAX;
-
-        const signature = await signMessageForDeposit(
-          owner,
-          userId,
-          transactionId,
-          account,
-          amountInWei,
-          nonce,
-          timestampLimit,
-        );
-
-        services.incrementSignatures(network);
-
-        return {
-          signature,
-          amountInWei: String(amountInWei),
-          nonce,
-          timestampNow,
-          timestampLimit,
-        };
       },
     },
   },
