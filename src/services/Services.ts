@@ -54,7 +54,7 @@ export class Services
 
   async init() {
     this.sqrSignatureContexts = networkObjectFactory((network) =>
-      getSqrSignatureContext(network, config.web3.ownerPrivateKey),
+      getSqrSignatureContext(network, config.web3.ownerPrivateKey!),
     );
     await this.start();
   }
