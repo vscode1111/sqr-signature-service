@@ -1,11 +1,10 @@
 import { ServiceBroker } from 'moleculer';
-import { Initilized, Started, Stopped, parseError, parseStack } from '~common';
+import { Initilized, Started, Stopped } from '~common';
 import {
   DeployNetworkKey,
   JsonRpcProvider,
   NetworkObject,
   Provider,
-  ServiceBrokerBase,
   ServicesBase,
   config,
   networkObjectFactory,
@@ -14,18 +13,10 @@ import { getSqrSignatureContext } from '~contracts';
 import { MultiSyncEngine, StatsCallback } from '~core';
 import { SqrSignatureContext } from './types';
 
-export class Services
-  extends ServiceBrokerBase
-  implements Initilized, Started, Stopped, ServicesBase
-{
+export class Services extends ServicesBase implements Initilized, Started, Stopped {
   private started: boolean;
   private providers: NetworkObject<Provider>;
   private sqrSignatureContexts: NetworkObject<SqrSignatureContext> | null;
-
-  private lastError: string | undefined;
-  private lastErrorStack: string | undefined;
-  private lastErrorDate: Date | undefined;
-  private errorCount: number;
 
   public multiSyncEngine: MultiSyncEngine;
 
@@ -78,25 +69,6 @@ export class Services
 
   getNetworkContext(network: DeployNetworkKey) {
     return this.sqrSignatureContexts?.[network];
-  }
-
-  saveProcessError(error: any) {
-    this.lastError = parseError(error);
-    this.lastErrorStack = parseStack(error);
-    this.lastErrorDate = new Date();
-    this.errorCount++;
-    return this.errorCount;
-  }
-
-  async getStats() {
-    return {
-      process: {
-        lastError: this.lastError,
-        lastErrorStack: this.lastErrorStack,
-        lastErrorDate: this.lastErrorDate,
-        errorCount: this.errorCount,
-      },
-    };
   }
 
   changeStats(network: DeployNetworkKey, callback: StatsCallback) {

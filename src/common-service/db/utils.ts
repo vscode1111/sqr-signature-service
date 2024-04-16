@@ -1,7 +1,8 @@
 import { FindOptionsWhere, Repository } from 'typeorm';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 import { CContract, Contract, Network, PContract } from '~db/entities';
 import { DeployNetworkKey } from '../types';
-import { DbQuerable } from './types';
+import { DbQuerable, DbWorkerContractStat } from './types';
 
 export async function truncateTables(queryRunner: DbQuerable, tables: string[]) {
   for (const table of tables) {
@@ -56,4 +57,18 @@ export async function findContracts(
   }
 
   return createQueryBuilder.getMany();
+}
+
+export function mapContract(contract: Contract): DbWorkerContractStat {
+  return {
+    address: contract.address,
+    name: contract.name || undefined,
+    syncBlockNumber: contract.syncBlockNumber,
+    processBlockNumber: contract.processBlockNumber,
+    disable: contract.disable || undefined,
+  };
+}
+
+export function printDbConfig(dataSourceConfig: PostgresConnectionOptions) {
+  console.log(`DB: ${dataSourceConfig.host}:${dataSourceConfig.port} ${dataSourceConfig.database}`);
 }

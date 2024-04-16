@@ -1,6 +1,6 @@
 import { arrayify } from '@ethersproject/bytes';
 import { createCipheriv, createDecipheriv } from 'crypto';
-import { AbiCoder, Signer, keccak256, solidityPacked, toUtf8Bytes } from 'ethers';
+import { AbiCoder, Interface, Signer, keccak256, solidityPacked, toUtf8Bytes } from 'ethers';
 import { MerkleTree } from 'merkletreejs';
 import { sanitizePrivateKey } from './wallet';
 
@@ -29,6 +29,14 @@ export async function signEncodedMessage(
   const hash = keccak256(encoded);
   const messageHashBin = arrayify(hash);
   return signer.signMessage(messageHashBin);
+}
+
+export function decodeInput<T>(input: string, abiInterface: Interface): T {
+  return abiInterface.decodeFunctionData(input.slice(0, 10), input) as T;
+}
+
+export function decodeData(data: string, types: readonly string[]) {
+  return AbiCoder.defaultAbiCoder().decode(types, data);
 }
 
 export function getMerkleRootHash(whitelist: string[]) {

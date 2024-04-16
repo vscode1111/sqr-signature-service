@@ -13,7 +13,10 @@ export interface MonitoringWorkerStats {
   chainBlockNumber: number;
   signatures: number;
   signaturesPerSec: number;
-  signatureErrors: number;
+  errorCount: number;
+  lastError?: string;
+  lastErrorStack?: string;
+  lastErrorDate?: Date;
   startDate: Date;
 }
 

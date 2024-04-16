@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { Context } from 'moleculer';
-import { checkIfNumber, toDate, toWeiWithFixed } from '~common';
+import { checkIfNumber, parseError, parseStack, toDate, toWeiWithFixed } from '~common';
 import {
   CacheMachine,
   HandlerFunc,
@@ -161,9 +161,15 @@ const handlerFunc: HandlerFunc = () => ({
             timestampLimit,
             dateLimit,
           };
-        } catch (e) {
-          services.changeStats(network, (stats) => ({ signatureErrors: ++stats.signatureErrors }));
-          throw e;
+        } catch (err) {
+          services.changeStats(network, (stats) => ({
+            errorCount: ++stats.errorCount,
+            lastError: parseError(err),
+            lastErrorStack: parseStack(err),
+            lastErrorDate: new Date(),
+          }));
+
+          throw err;
         }
       },
     },
@@ -220,9 +226,15 @@ const handlerFunc: HandlerFunc = () => ({
             timestampLimit,
             dateLimit,
           };
-        } catch (e) {
-          services.changeStats(network, (stats) => ({ signatureErrors: ++stats.signatureErrors }));
-          throw e;
+        } catch (err) {
+          services.changeStats(network, (stats) => ({
+            errorCount: ++stats.errorCount,
+            lastError: parseError(err),
+            lastErrorStack: parseStack(err),
+            lastErrorDate: new Date(),
+          }));
+
+          throw err;
         }
       },
     },

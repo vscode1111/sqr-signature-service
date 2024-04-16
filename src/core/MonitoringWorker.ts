@@ -55,7 +55,7 @@ export class MonitoringWorker extends WorkerBase<MonitoringWorkerStats | null> {
       chainBlockNumber: 0,
       signatures: 0,
       signaturesPerSec: 0,
-      signatureErrors: 0,
+      errorCount: 0,
       startDate: this.startDate,
     };
   }
