@@ -52,8 +52,6 @@ export function getSqrSignatureContext(
     (object) => object.address,
   );
 
-  console.log(222, contractTypeMap);
-
   return {
     owner,
     rawProvider,

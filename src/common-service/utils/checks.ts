@@ -1,5 +1,6 @@
 import { ApiError } from '~common';
-import { ContractType, contractTypes } from '~db';
+//Do not change "from '~db/entities'"
+import { ContractType, contractTypes } from '~db/entities';
 import { DeployNetworkKey } from '../types';
 import { deployNetworks } from './networks';
 

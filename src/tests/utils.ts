@@ -26,7 +26,7 @@ export async function runConcurrently(
         await fn(task);
       } catch (err) {
         errors++;
-        console.error(err);
+        // console.error(err);
       }
 
       if (task % printStep === 0) {

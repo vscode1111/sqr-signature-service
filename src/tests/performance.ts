@@ -4,8 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { GetLaunchpadDepositSignatureParams, GetSignatureDepositResponse } from '~types';
 import { runConcurrently } from './utils';
 
-const SRV_URL = 'http://127.0.0.1:3000';
+// const SRV_URL = 'http://127.0.0.1:3000';
 // const SRV_URL = 'https://sqr.main.dev.msq.local/signature/api';
+const SRV_URL = 'https://sqr.stage.msq.local/signature/api';
 
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
@@ -44,7 +45,7 @@ describe('performance', () => {
       async () => {
         await getLaunchDepositSignature();
       },
-      10_000,
+      100_000,
       100,
       100,
     );
