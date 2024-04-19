@@ -24,8 +24,6 @@ export class Services extends ServicesBase implements Initilized, Started, Stopp
     super(broker);
 
     this.started = false;
-    this.lastErrorDate = undefined;
-    this.errorCount = 0;
 
     this.providers = networkObjectFactory(
       (network) =>

@@ -6,9 +6,9 @@ import {
   HandlerFunc,
   MissingServicePrivateKey,
   UINT32_MAX,
+  checkIfContractType,
   checkIfNetwork,
   commonHandlers,
-  config,
   getChainConfig,
   web3Constants,
 } from '~common-service';
@@ -92,6 +92,7 @@ const handlerFunc: HandlerFunc = () => ({
     'network.launchpad.deposit-signature': {
       params: {
         network: { type: 'string' },
+        contractType: { type: 'string' },
         userId: { type: 'string' },
         transactionId: { type: 'string' },
         account: { type: 'string' },
@@ -104,13 +105,14 @@ const handlerFunc: HandlerFunc = () => ({
 
         try {
           const network = checkIfNetwork(ctx?.params?.network);
+          const contractType = checkIfContractType(ctx?.params?.contractType);
           const { userId, transactionId, account, amount } = ctx?.params;
           const context = services.getNetworkContext(network);
           if (!context) {
             throw new MissingServicePrivateKey();
           }
 
-          const { owner, sqrSignatures } = context;
+          const { owner, sqrSignatures, contractTypeMap } = context;
           const { sqrDecimals } = getChainConfig(network);
           const amountInWei = toWeiWithFixed(amount, sqrDecimals);
 
@@ -119,7 +121,9 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampLimit = -1;
           let dateLimit = new Date(1900, 1, 1);
 
-          const contractAddress = config.web3.contracts[network][0].address;
+          // const contractAddress = config.web3.contracts[network][0].address;
+
+          const contractAddress = contractTypeMap[contractType][0];
 
           if (CONSTANT_TIME_LIMIT) {
             nonce = Number(await sqrSignatures[contractAddress].getDepositNonce(userId));
@@ -155,6 +159,7 @@ const handlerFunc: HandlerFunc = () => ({
 
           return {
             signature,
+            // contractAddress,
             amountInWei: String(amountInWei),
             nonce,
             timestampNow,
@@ -177,6 +182,7 @@ const handlerFunc: HandlerFunc = () => ({
     'network.launchpad.deposit-signature-instant': {
       params: {
         network: { type: 'string' },
+        contractType: { type: 'string' },
         userId: { type: 'string' },
         transactionId: { type: 'string' },
         account: { type: 'string' },

@@ -10,9 +10,13 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import { C, NF2, P } from "~common";
-import { rawDbTable } from "~db/tableNames";
+import { rawDbTable } from "../../tableNames";
 import { Event } from "./Event";
 import { Network } from "./Network";
+
+export const contractTypes = ['fcfs', 'sqrp-gated', 'white-list'] as const;
+export type ContractType = (typeof contractTypes)[number];
+const DEFAULT_CONTRACT_TYPE: ContractType = 'fcfs';
 
 @Entity({ name: rawDbTable._contracts })
 @Index([P<Contract>((p) => p.networkId) as string, P<Contract>((p) => p.address) as string], {
@@ -38,12 +42,19 @@ export class Contract {
   @Index()
   address!: string;
 
+  @Column({
+    type: "enum",
+    default: DEFAULT_CONTRACT_TYPE,
+    enum: contractTypes,
+  })
+  type!: ContractType;
+
   @Column({ nullable: true })
   name!: string;
-  
+
   @Column({ nullable: true })
   disable!: boolean;
-
+  
   @Column()
   syncBlockNumber!: number;
 
@@ -63,5 +74,5 @@ export class Contract {
   events!: Event[];
 }
 
-export const CContract = C(Contract);
+export const  CContract = C(Contract);
 export const PContract = NF2<Contract>((name) => `${CContract}.${name}`);
