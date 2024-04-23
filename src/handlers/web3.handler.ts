@@ -1,6 +1,13 @@
 import dayjs from 'dayjs';
 import { Context } from 'moleculer';
-import { checkIfNumber, parseError, parseStack, toDate, toWeiWithFixed } from '~common';
+import {
+  checkIfAddress,
+  checkIfNumber,
+  parseError,
+  parseStack,
+  toDate,
+  toWeiWithFixed,
+} from '~common';
 import {
   CacheMachine,
   HandlerFunc,
@@ -18,12 +25,11 @@ import {
   GetBlockParams,
   GetBlockResponse,
   GetLaunchpadDepositSignatureParams,
-  GetNetworkAddressesResponse,
   GetNetworkParams,
   GetSignatureDepositResponse,
   HandlerParams,
 } from '~types';
-import { getContractData, signMessageForDeposit } from '~utils';
+import { signMessageForDeposit } from '~utils';
 
 const TIME_OUT = 3600;
 const INDEXER_OFFSET = 600;
@@ -36,19 +42,6 @@ const cacheMachine = new CacheMachine();
 const handlerFunc: HandlerFunc = () => ({
   actions: {
     ...commonHandlers,
-
-    'network.addresses': {
-      params: {
-        network: { type: 'string' },
-      } as HandlerParams<GetNetworkParams>,
-      async handler(ctx: Context<GetNetworkParams>): Promise<GetNetworkAddressesResponse> {
-        ctx.broker.logger.info(`web3.handler: network.addresses`);
-
-        const network = checkIfNetwork(ctx?.params?.network);
-        const result = getContractData(network);
-        return result.sqrSignatureData;
-      },
-    },
 
     'network.blocks.id': {
       params: {
@@ -93,6 +86,7 @@ const handlerFunc: HandlerFunc = () => ({
       params: {
         network: { type: 'string' },
         contractType: { type: 'string' },
+        contractAddress: { type: 'string' },
         userId: { type: 'string' },
         transactionId: { type: 'string' },
         account: { type: 'string' },
@@ -105,14 +99,15 @@ const handlerFunc: HandlerFunc = () => ({
 
         try {
           const network = checkIfNetwork(ctx?.params?.network);
-          const contractType = checkIfContractType(ctx?.params?.contractType);
+          checkIfContractType(ctx?.params?.contractType);
+          const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
           const { userId, transactionId, account, amount } = ctx?.params;
           const context = services.getNetworkContext(network);
           if (!context) {
             throw new MissingServicePrivateKey();
           }
 
-          const { owner, sqrSignatures, contractTypeMap } = context;
+          const { owner, getSqrSignature } = context;
           const { sqrDecimals } = getChainConfig(network);
           const amountInWei = toWeiWithFixed(amount, sqrDecimals);
 
@@ -121,12 +116,10 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampLimit = -1;
           let dateLimit = new Date(1900, 1, 1);
 
-          // const contractAddress = config.web3.contracts[network][0].address;
-
-          const contractAddress = contractTypeMap[contractType][0];
+          const sqrSignature = getSqrSignature(contractAddress);
 
           if (CONSTANT_TIME_LIMIT) {
-            nonce = Number(await sqrSignatures[contractAddress].getDepositNonce(userId));
+            nonce = Number(await sqrSignature.getDepositNonce(userId));
             timestampLimit = UINT32_MAX;
           } else {
             const [block, nonceRaw] = await Promise.all([
@@ -135,7 +128,7 @@ const handlerFunc: HandlerFunc = () => ({
                 () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
                 CACHE_TIME_OUT,
               ),
-              sqrSignatures[contractAddress].getDepositNonce(userId),
+              sqrSignature.getDepositNonce(userId),
             ]);
             nonce = Number(nonceRaw);
             timestampNow = block.timestamp;
@@ -183,6 +176,7 @@ const handlerFunc: HandlerFunc = () => ({
       params: {
         network: { type: 'string' },
         contractType: { type: 'string' },
+        contractAddress: { type: 'string' },
         userId: { type: 'string' },
         transactionId: { type: 'string' },
         account: { type: 'string' },

@@ -25,6 +25,7 @@ export interface GetBlockResponse extends Web3Block {
 
 export interface GetLaunchpadDepositSignatureParams extends GetNetworkParams {
   contractType: ContractType;
+  contractAddress: string;
   userId: string;
   transactionId: string;
   account: string;

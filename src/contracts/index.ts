@@ -1,14 +1,7 @@
 import { ethers } from 'ethers';
-import {
-  DEFAULT_JSON_RPC_PROVIDER_OPTIONS,
-  DeployNetworkKey,
-  config,
-  objectFactory,
-} from '~common-service';
-import { ContractType } from '~db';
-import { ContractTypeMap, SqrSignatureContext } from '~services';
+import { DEFAULT_JSON_RPC_PROVIDER_OPTIONS, DeployNetworkKey, config } from '~common-service';
+import { SqrSignatureContext } from '~services';
 import { SQRSignature__factory } from '~typechain-types';
-import { getContractData } from '~utils';
 
 export function getSqrSignatureContext(
   network: DeployNetworkKey,
@@ -29,33 +22,11 @@ export function getSqrSignatureContext(
     undefined,
     DEFAULT_JSON_RPC_PROVIDER_OPTIONS,
   );
-  const { sqrSignatureData } = getContractData(network);
   const owner = new ethers.Wallet(privateKey, rawProvider);
-
-  const contractTypeMap: ContractTypeMap = {} as ContractTypeMap;
-
-  const sqrSignatures = objectFactory(
-    sqrSignatureData,
-    (contractData) => {
-      const { address } = contractData;
-
-      const type: ContractType = contractData.type as ContractType;
-      if (type) {
-        if (!contractTypeMap[type]) {
-          contractTypeMap[type] = [];
-        }
-        contractTypeMap[type].push(address);
-      }
-
-      return SQRSignature__factory.connect(address, owner);
-    },
-    (object) => object.address,
-  );
 
   return {
     owner,
     rawProvider,
-    sqrSignatures,
-    contractTypeMap,
+    getSqrSignature: (address: string) => SQRSignature__factory.connect(address, owner),
   };
 }

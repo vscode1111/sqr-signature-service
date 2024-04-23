@@ -19,25 +19,6 @@ module.exports = {
   },
   web3: {
     ownerPrivateKey: 'e6f8fde90650d548c818fb3676987105e19b345e740429727a381b1237b31340',
-    contracts: {
-      bsc: [
-        {
-          address: '0x5D27C778759e078BBe6D11A6cd802E41459Fe852', //Main
-          blockNumber: 37764772,
-          type: 'fcfs',
-        },
-        {
-          address: '0xe561e403093A19A770d5EE515aC1d5434275c026', //Main
-          blockNumber: 37966266,
-          type: 'sqrp-gated',
-        },
-        {
-          address: '0x8e6585Dd84c1cDc340727f66183992AaCe7Bfc18', //Main
-          blockNumber: 37966320,
-          type: 'white-list',
-        },
-      ],
-    },
     provider: {
       bsc: {
         // http: 'https://rpc.ankr.com/bsc/0a92c9288ddd85181db59c48d2eae9d07873954be63e06893de5b4cbcb37842e', //magic
