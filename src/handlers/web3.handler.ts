@@ -101,15 +101,16 @@ const handlerFunc: HandlerFunc = () => ({
           const network = checkIfNetwork(ctx?.params?.network);
           checkIfContractType(ctx?.params?.contractType);
           const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
-          const { userId, transactionId, account, amount } = ctx?.params;
+          const account = checkIfAddress(ctx?.params?.account);
+          const { userId, transactionId, amount } = ctx?.params;
           const context = services.getNetworkContext(network);
           if (!context) {
             throw new MissingServicePrivateKey();
           }
 
           const { owner, getSqrSignature } = context;
-          const { sqrDecimals } = getChainConfig(network);
-          const amountInWei = toWeiWithFixed(amount, sqrDecimals);
+          const { erc20Decimals } = getChainConfig(network);
+          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
 
           let nonce = -1;
           let timestampNow = -1;
@@ -188,15 +189,16 @@ const handlerFunc: HandlerFunc = () => ({
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
-          const { userId, transactionId, account, amount } = ctx?.params;
+          const account = checkIfAddress(ctx?.params?.account);
+          const { userId, transactionId, amount } = ctx?.params;
           const context = services.getNetworkContext(network);
           if (!context) {
             throw new MissingServicePrivateKey();
           }
 
           const { owner } = context;
-          const { sqrDecimals } = getChainConfig(network);
-          const amountInWei = toWeiWithFixed(amount, sqrDecimals);
+          const { erc20Decimals } = getChainConfig(network);
+          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
 
           let nonce = 0;
           let timestampNow = -1;

@@ -12,7 +12,7 @@ const SRV_URL = 'https://sqr.main.dev.msq.local/signature/api';
 
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-async function getLaunchDepositSignature(): Promise<GetSignatureDepositResponse | null> {
+async function getLaunchpadDepositSignature(): Promise<GetSignatureDepositResponse | null> {
   const userId = uuidv4();
   const transactionId = uuidv4();
 
@@ -46,7 +46,7 @@ describe('performance', () => {
 
     await runConcurrently(
       async () => {
-        await getLaunchDepositSignature();
+        await getLaunchpadDepositSignature();
       },
       1_000,
       100,
