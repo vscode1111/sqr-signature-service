@@ -16,7 +16,6 @@ import {
   checkIfContractType,
   checkIfNetwork,
   commonHandlers,
-  getChainConfig,
   web3Constants,
 } from '~common-service';
 import { StatsData } from '~core';
@@ -108,14 +107,13 @@ const handlerFunc: HandlerFunc = () => ({
             throw new MissingServicePrivateKey();
           }
 
-          const { owner, getSqrSignature } = context;
-          const { erc20Decimals } = getChainConfig(network);
-          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
+          const { owner, getSqrSignature, getErc20Token } = context;
 
           let nonce = -1;
           let timestampNow = -1;
           let timestampLimit = -1;
           let dateLimit = new Date(1900, 1, 1);
+          let erc20Decimals = 18;
 
           const sqrSignature = getSqrSignature(contractAddress);
 
@@ -123,14 +121,22 @@ const handlerFunc: HandlerFunc = () => ({
             nonce = Number(await sqrSignature.getDepositNonce(userId));
             timestampLimit = UINT32_MAX;
           } else {
-            const [block, nonceRaw] = await Promise.all([
+            const [block, rawErc20Decimals, nonceRaw] = await Promise.all([
               cacheMachine.call(
                 () => BLOCK_KEY,
                 () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
                 CACHE_TIME_OUT,
               ),
+              cacheMachine.call<number>(
+                () => `${contractAddress}-contract-settings`,
+                async () => {
+                  const tokenAddress = await getSqrSignature(contractAddress).erc20Token();
+                  return Number(await getErc20Token(tokenAddress).decimals());
+                },
+              ),
               sqrSignature.getDepositNonce(userId),
             ]);
+            erc20Decimals = rawErc20Decimals;
             nonce = Number(nonceRaw);
             timestampNow = block.timestamp;
             timestampLimit = timestampNow + TIME_OUT;
@@ -138,6 +144,8 @@ const handlerFunc: HandlerFunc = () => ({
               .add(TIME_OUT + INDEXER_OFFSET, 'seconds')
               .toDate();
           }
+
+          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
 
           const signature = await signMessageForDeposit(
             owner,
@@ -191,18 +199,27 @@ const handlerFunc: HandlerFunc = () => ({
         try {
           const account = checkIfAddress(ctx?.params?.account);
           const { userId, transactionId, amount } = ctx?.params;
+          const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
           const context = services.getNetworkContext(network);
           if (!context) {
             throw new MissingServicePrivateKey();
           }
 
-          const { owner } = context;
-          const { erc20Decimals } = getChainConfig(network);
-          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
+          const { owner, getSqrSignature, getErc20Token } = context;
 
           let nonce = 0;
           let timestampNow = -1;
           let timestampLimit = UINT32_MAX;
+
+          const erc20Decimals = await cacheMachine.call<number>(
+            () => `${contractAddress}-contract-settings`,
+            async () => {
+              const tokenAddress = await getSqrSignature(contractAddress).erc20Token();
+              return Number(await getErc20Token(tokenAddress).decimals());
+            },
+          );
+
+          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
 
           const signature = await signMessageForDeposit(
             owner,

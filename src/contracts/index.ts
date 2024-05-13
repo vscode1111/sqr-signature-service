@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { DEFAULT_JSON_RPC_PROVIDER_OPTIONS, DeployNetworkKey, config } from '~common-service';
 import { SqrSignatureContext } from '~services';
-import { SQRSignature__factory } from '~typechain-types';
+import { ERC20Token__factory, SQRSignature__factory } from '~typechain-types';
 
 export function getSqrSignatureContext(
   network: DeployNetworkKey,
@@ -28,5 +28,6 @@ export function getSqrSignatureContext(
     owner,
     rawProvider,
     getSqrSignature: (address: string) => SQRSignature__factory.connect(address, owner),
+    getErc20Token: (address: string) => ERC20Token__factory.connect(address, owner),
   };
 }

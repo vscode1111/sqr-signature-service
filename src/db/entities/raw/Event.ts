@@ -9,12 +9,24 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { C, NF2, P } from "~common";
-import { rawDbTable } from "~db/tableNames";
+import { rawDbTable } from "../../tableNames";
 import { Contract } from "./Contract";
+import { Network } from "./Network";
 import { Transaction } from "./Transaction";
 
 @Entity({ name: rawDbTable._events })
 export class Event {
+  @Column()
+  @Index()
+  networkId!: number;
+
+  @ManyToOne(() => Network, (network) => network.blocks)
+  @JoinColumn({
+    name: P<Event>((p) => p.networkId),
+    referencedColumnName: P<Network>((p) => p.id),
+  })
+  network!: Network;
+
   @PrimaryColumn()
   @Index()
   @ManyToOne(() => Transaction, (transaction) => transaction.events)

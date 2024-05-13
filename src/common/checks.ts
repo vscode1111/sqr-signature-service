@@ -28,19 +28,14 @@ export function checkIfNumber(
   return numberValue;
 }
 
-export function strictCheckIfAddress(value?: string, errorMessage = `${value} is not a address`) {
+export function checkIfAddress(
+  value: string | undefined,
+  errorMessage = `${value} is not a address`,
+) {
   if (typeof value !== 'string' || !ethers.isAddress(value)) {
     throw new ApiError(errorMessage, 404);
   }
   return value;
-}
-
-export function checkIfAddress(value?: string, errorMessage = `${value} is not a address`) {
-  const lowCaseAddress = value?.toLowerCase();
-  if (typeof value !== 'string' || !ethers.isAddress(lowCaseAddress)) {
-    throw new ApiError(errorMessage, 404);
-  }
-  return lowCaseAddress;
 }
 
 export function isExists(value: string) {
