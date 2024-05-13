@@ -121,7 +121,7 @@ const handlerFunc: HandlerFunc = () => ({
             nonce = Number(await sqrSignature.getDepositNonce(userId));
             timestampLimit = UINT32_MAX;
           } else {
-            const [block, rawErc20Decimals, nonceRaw] = await Promise.all([
+            const [block, _erc20Decimals, nonceRaw] = await Promise.all([
               cacheMachine.call(
                 () => BLOCK_KEY,
                 () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
@@ -136,7 +136,7 @@ const handlerFunc: HandlerFunc = () => ({
               ),
               sqrSignature.getDepositNonce(userId),
             ]);
-            erc20Decimals = rawErc20Decimals;
+            erc20Decimals = _erc20Decimals;
             nonce = Number(nonceRaw);
             timestampNow = block.timestamp;
             timestampLimit = timestampNow + TIME_OUT;
@@ -161,7 +161,6 @@ const handlerFunc: HandlerFunc = () => ({
 
           return {
             signature,
-            // contractAddress,
             amountInWei: String(amountInWei),
             nonce,
             timestampNow,
