@@ -1,4 +1,4 @@
-//VERSION 0.0.5;
+//VERSION 0.0.6;
 export * from './Lock';
 export * from './SpeedCounter';
 export * from './checks';
