@@ -32,8 +32,8 @@ import { signMessageForDeposit } from '~utils';
 
 // const TIME_OUT = 300;
 // const INDEXER_OFFSET = 300;
-const TIME_OUT = 2 * 60;
-const INDEXER_OFFSET = 0;
+const TIME_OUT = 60;
+const INDEXER_OFFSET = 60;
 
 const CONSTANT_TIME_LIMIT = false;
 const BLOCK_KEY = 'BLOCK_KEY';
