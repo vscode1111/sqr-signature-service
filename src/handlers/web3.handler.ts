@@ -32,12 +32,14 @@ import { signMessageForDeposit } from '~utils';
 
 // const TIME_OUT = 300;
 // const INDEXER_OFFSET = 300;
+// const CACHE_TIME_OUT = 60_000;
+
 const TIME_OUT = 60;
 const INDEXER_OFFSET = 60;
+const CACHE_TIME_OUT = 6_000;
 
 const CONSTANT_TIME_LIMIT = false;
 const BLOCK_KEY = 'BLOCK_KEY';
-const CACHE_TIME_OUT = 60_000;
 
 const cacheMachine = new CacheMachine();
 
