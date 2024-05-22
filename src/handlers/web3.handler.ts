@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { Context } from 'moleculer';
 import {
+  MINUTES,
   checkIfAddress,
   checkIfNumber,
   parseError,
@@ -34,9 +35,9 @@ import { signMessageForDeposit } from '~utils';
 // const INDEXER_OFFSET = 300;
 // const CACHE_TIME_OUT = 60_000;
 
-const TIME_OUT = 7 * 60;
-const INDEXER_OFFSET = 60;
-const CACHE_TIME_OUT = 6_000;
+const TIME_OUT = 3 * MINUTES;
+const INDEXER_OFFSET = 3 * MINUTES;
+const CACHE_TIME_OUT = Math.round(TIME_OUT / 10);
 
 const CONSTANT_TIME_LIMIT = false;
 const BLOCK_KEY = 'BLOCK_KEY';
