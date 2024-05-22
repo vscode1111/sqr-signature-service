@@ -31,6 +31,37 @@ export const MISSING_SERVICE_PRIVATE_KEY = `Service hasn't correct private key o
 //   };
 // }
 
+export async function waitTxEx(
+  promise: Promise<TransactionResponse>,
+  options?: {
+    onStarted?: (tx: TransactionResponse) => Promisable<void>;
+    onSuccess?: (tx: TransactionResponse) => Promisable<void>;
+    onFail?: (err: any) => Promisable<void>;
+    skipWait?: boolean;
+  },
+): Promise<TransactionResponse | null> {
+  let tx = null;
+  try {
+    tx = await promise;
+    if (options?.onStarted) {
+      await options.onStarted(tx);
+    }
+    if (options?.skipWait) {
+      return tx;
+    }
+    await tx.wait();
+    if (options?.onSuccess) {
+      await options.onSuccess(tx);
+    }
+  } catch (e) {
+    if (options?.onFail) {
+      await options.onFail(e);
+    }
+    throw e;
+  }
+  return tx;
+}
+
 export async function postInformTx(
   promise: Promise<TransactionResponse>,
   receiver: PostReceiver,
