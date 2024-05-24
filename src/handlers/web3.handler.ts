@@ -35,8 +35,8 @@ import { signMessageForDeposit } from '~utils';
 // const INDEXER_OFFSET = 300;
 // const CACHE_TIME_OUT = 60_000;
 
-const TIME_OUT = 3 * MINUTES;
-const INDEXER_OFFSET = 3 * MINUTES;
+const TIME_OUT = 5 * MINUTES;
+const INDEXER_OFFSET = 5 * MINUTES;
 const CACHE_TIME_OUT = Math.round(TIME_OUT / 10);
 
 const CONSTANT_TIME_LIMIT = false;
