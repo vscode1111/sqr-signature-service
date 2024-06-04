@@ -1,7 +1,10 @@
 import axios from 'axios';
 import https from 'https';
 import { v4 as uuidv4 } from 'uuid';
-import { GetLaunchpadDepositSignatureParams, GetSignatureDepositResponse } from '~types';
+import {
+  GetSQRPaymentGatewayDepositSignatureParams,
+  GetSQRpProRataDepositSignatureResponse,
+} from '~types';
 import { runConcurrently } from './utils';
 
 // const SRV_URL = 'http://127.0.0.1:3000';
@@ -12,14 +15,13 @@ const SRV_URL = 'https://sqr.main.dev.msq.local/signature/api';
 
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-async function getLaunchpadDepositSignature(): Promise<GetSignatureDepositResponse | null> {
+async function getLaunchpadDepositSignature(): Promise<GetSQRpProRataDepositSignatureResponse | null> {
   const userId = uuidv4();
   const transactionId = uuidv4();
 
-  const requestBody: Omit<GetLaunchpadDepositSignatureParams, 'network'> = {
+  const requestBody: Omit<GetSQRPaymentGatewayDepositSignatureParams, 'network'> = {
     // userId: 'tu1-f75c73b1-0f13-46ae-88f8-2048765c5ad4',
     // transactionId: 'b7ae3413-1ccb-42d0-9edf-86e9e6d6953t+06',
-    contractType: 'fcfs',
     contractAddress: '0x5D27C778759e078BBe6D11A6cd802E41459Fe852',
     userId,
     transactionId,
@@ -27,7 +29,7 @@ async function getLaunchpadDepositSignature(): Promise<GetSignatureDepositRespon
     amount: 1,
   };
 
-  const response = await axios.post<GetSignatureDepositResponse>(
+  const response = await axios.post<GetSQRpProRataDepositSignatureResponse>(
     `${SRV_URL}/bsc/launchpad/deposit-signature`,
     // `${SRV_URL}/bsc/launchpad/deposit-signature-instant`,
     requestBody,

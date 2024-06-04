@@ -2,7 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { ERC20Token } from "./ERC20Token";
-export type { SQRSignature } from "./SQRSignature";
+export type { SQRPaymentGateway } from "./SQRPaymentGateway";
+export type { SQRpProRata } from "./SQRpProRata";
 export * as factories from "./factories";
 export { ERC20Token__factory } from "./factories/ERC20Token__factory";
-export { SQRSignature__factory } from "./factories/SQRSignature__factory";
+export { SQRPaymentGateway__factory } from "./factories/SQRPaymentGateway__factory";
+export { SQRpProRata__factory } from "./factories/SQRpProRata__factory";

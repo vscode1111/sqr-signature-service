@@ -2,4 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export { ERC20Token__factory } from "./ERC20Token__factory";
-export { SQRSignature__factory } from "./SQRSignature__factory";
+export { SQRPaymentGateway__factory } from "./SQRPaymentGateway__factory";
+export { SQRpProRata__factory } from "./SQRpProRata__factory";

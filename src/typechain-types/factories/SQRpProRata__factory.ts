@@ -3,23 +3,13 @@
 /* eslint-disable */
 
 import { Contract, Interface, type ContractRunner } from "ethers";
-import type { SQRSignature, SQRSignatureInterface } from "../SQRSignature";
+import type { SQRpProRata, SQRpProRataInterface } from "../SQRpProRata";
 
 const _abi = [
   {
     inputs: [],
     stateMutability: "nonpayable",
     type: "constructor",
-  },
-  {
-    inputs: [],
-    name: "AchievedDepositGoal",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "AchievedWithdrawGoal",
-    type: "error",
   },
   {
     inputs: [
@@ -45,7 +35,22 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "AllUsersProcessed",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "AmountNotZero",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "BaseTokenNotZeroAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "BoostTokenNotZeroAddress",
     type: "error",
   },
   {
@@ -55,12 +60,7 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "ColdWalletNotZeroAddress",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "ContractMustHaveSufficientFunds",
+    name: "CloseDateMustBeGreaterThanStartDate",
     type: "error",
   },
   {
@@ -108,12 +108,17 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "ERC20TokenNotZeroAddress",
+    name: "FailedInnerCall",
     type: "error",
   },
   {
     inputs: [],
-    name: "FailedInnerCall",
+    name: "GoalNotZero",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "GoalUnreached",
     type: "error",
   },
   {
@@ -231,23 +236,9 @@ const _abi = [
     type: "error",
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "balanceLimit",
-        type: "uint256",
-      },
-    ],
-    name: "ChangeBalanceLimit",
-    type: "event",
+    inputs: [],
+    name: "VerifierNotZeroAddress",
+    type: "error",
   },
   {
     anonymous: false,
@@ -266,31 +257,6 @@ const _abi = [
       },
     ],
     name: "Deposit",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "ForceWithdraw",
     type: "event",
   },
   {
@@ -329,6 +295,25 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "Refund",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
         name: "implementation",
@@ -344,12 +329,6 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
-        name: "account",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
         name: "to",
         type: "address",
       },
@@ -360,21 +339,8 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "Withdraw",
+    name: "WithdrawGoal",
     type: "event",
-  },
-  {
-    inputs: [],
-    name: "MAX_INT",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
   },
   {
     inputs: [],
@@ -391,7 +357,26 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "balanceLimit",
+    name: "VERSION",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "balanceOf",
     outputs: [
       {
         internalType: "uint256",
@@ -403,14 +388,53 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
+    inputs: [],
+    name: "baseToken",
+    outputs: [
       {
-        internalType: "string",
-        name: "userId",
-        type: "string",
+        internalType: "contract IERC20",
+        name: "",
+        type: "address",
       },
     ],
-    name: "balanceOf",
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "boostToken",
+    outputs: [
+      {
+        internalType: "contract IERC20",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "calculateAccountRefundAmount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "calculateOverfundAmount",
     outputs: [
       {
         internalType: "uint256",
@@ -436,32 +460,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "calculateRemainWithraw",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_balanceLimit",
-        type: "uint256",
-      },
-    ],
-    name: "changeBalanceLimit",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "closeDate",
     outputs: [
       {
@@ -474,30 +472,7 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "coldWallet",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
-      {
-        internalType: "string",
-        name: "userId",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "transactionId",
-        type: "string",
-      },
       {
         internalType: "address",
         name: "account",
@@ -509,55 +484,14 @@ const _abi = [
         type: "uint256",
       },
       {
-        internalType: "uint32",
-        name: "nonce",
-        type: "uint32",
-      },
-      {
-        internalType: "uint32",
-        name: "timestampLimit",
-        type: "uint32",
-      },
-    ],
-    name: "deposit",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "depositGoal",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "userId",
-        type: "string",
+        internalType: "bool",
+        name: "boost",
+        type: "bool",
       },
       {
         internalType: "string",
         name: "transactionId",
         type: "string",
-      },
-      {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
       },
       {
         internalType: "uint32",
@@ -573,63 +507,6 @@ const _abi = [
     name: "depositSig",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "depositVerifier",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "erc20Token",
-    outputs: [
-      {
-        internalType: "contract IERC20",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "userId",
-        type: "string",
-      },
-    ],
-    name: "fetchFundItem",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "uint256",
-            name: "depositedAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "withdrewAmount",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct SQRPaymentGateway.FundItem",
-        name: "",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -650,7 +527,7 @@ const _abi = [
             type: "uint256",
           },
         ],
-        internalType: "struct SQRPaymentGateway.TransactionItem",
+        internalType: "struct SQRpProRata.TransactionItem",
         name: "",
         type: "tuple",
       },
@@ -662,23 +539,36 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "token",
+        name: "account",
         type: "address",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
       },
     ],
-    name: "forceWithdraw",
-    outputs: [],
-    stateMutability: "nonpayable",
+    name: "fetchUser",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "depositedAmount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "contributionAmount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint32",
+            name: "nonce",
+            type: "uint32",
+          },
+        ],
+        internalType: "struct SQRpProRata.User",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -697,12 +587,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "string",
-        name: "userId",
-        type: "string",
+        internalType: "address",
+        name: "account",
+        type: "address",
       },
     ],
-    name: "getDepositNonce",
+    name: "getNonce",
     outputs: [
       {
         internalType: "uint32",
@@ -714,19 +604,39 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "string",
-        name: "userId",
-        type: "string",
-      },
-    ],
-    name: "getWithdrawNonce",
+    inputs: [],
+    name: "getProcessedUserIndex",
     outputs: [
       {
         internalType: "uint32",
         name: "",
         type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getUserCount",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "goal",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -741,27 +651,22 @@ const _abi = [
       },
       {
         internalType: "address",
-        name: "_erc20Token",
+        name: "_baseToken",
         type: "address",
       },
       {
         internalType: "address",
-        name: "_depositVerifier",
+        name: "_boostToken",
         type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_depositGoal",
-        type: "uint256",
       },
       {
         internalType: "address",
-        name: "_withdrawVerifier",
+        name: "_verifier",
         type: "address",
       },
       {
         internalType: "uint256",
-        name: "_withdrawGoal",
+        name: "_goal",
         type: "uint256",
       },
       {
@@ -774,20 +679,49 @@ const _abi = [
         name: "_closeDate",
         type: "uint32",
       },
-      {
-        internalType: "address",
-        name: "_coldWallet",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_balanceLimit",
-        type: "uint256",
-      },
     ],
     name: "initialize",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "isAfterCloseDate",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "isBeforeStartDate",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "isReady",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -814,6 +748,26 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint32",
+        name: "_batchSize",
+        type: "uint32",
+      },
+    ],
+    name: "refund",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "refundAll",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -894,118 +848,33 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "string",
-        name: "userId",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "transactionId",
-        type: "string",
-      },
+    inputs: [],
+    name: "verifier",
+    outputs: [
       {
         internalType: "address",
-        name: "to",
+        name: "",
         type: "address",
       },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "uint32",
-        name: "nonce",
-        type: "uint32",
-      },
-      {
-        internalType: "uint32",
-        name: "timestampLimit",
-        type: "uint32",
-      },
     ],
-    name: "withdraw",
-    outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "withdrawGoal",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "userId",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "transactionId",
-        type: "string",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "uint32",
-        name: "timestampLimit",
-        type: "uint32",
-      },
-      {
-        internalType: "bytes",
-        name: "signature",
-        type: "bytes",
-      },
-    ],
-    name: "withdrawSig",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
-  {
-    inputs: [],
-    name: "withdrawVerifier",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
 ] as const;
 
-export class SQRSignature__factory {
+export class SQRpProRata__factory {
   static readonly abi = _abi;
-  static createInterface(): SQRSignatureInterface {
-    return new Interface(_abi) as SQRSignatureInterface;
+  static createInterface(): SQRpProRataInterface {
+    return new Interface(_abi) as SQRpProRataInterface;
   }
-  static connect(
-    address: string,
-    runner?: ContractRunner | null
-  ): SQRSignature {
-    return new Contract(address, _abi, runner) as unknown as SQRSignature;
+  static connect(address: string, runner?: ContractRunner | null): SQRpProRata {
+    return new Contract(address, _abi, runner) as unknown as SQRpProRata;
   }
 }

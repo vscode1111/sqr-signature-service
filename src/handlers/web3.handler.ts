@@ -14,7 +14,6 @@ import {
   HandlerFunc,
   MissingServicePrivateKey,
   UINT32_MAX,
-  checkIfContractType,
   checkIfNetwork,
   commonHandlers,
   web3Constants,
@@ -24,12 +23,13 @@ import { services } from '~index';
 import {
   GetBlockParams,
   GetBlockResponse,
-  GetLaunchpadDepositSignatureParams,
   GetNetworkParams,
-  GetSignatureDepositResponse,
+  GetSQRPaymentGatewayDepositSignatureParams,
+  GetSQRpProRataDepositSignatureParams,
+  GetSQRpProRataDepositSignatureResponse,
   HandlerParams,
 } from '~types';
-import { signMessageForDeposit } from '~utils';
+import { signMessageForSQRPaymentGatewayDeposit, signMessageForSQRpProRataDeposit } from '~utils';
 
 // const TIME_OUT = 300;
 // const INDEXER_OFFSET = 300;
@@ -87,24 +87,22 @@ const handlerFunc: HandlerFunc = () => ({
       },
     },
 
-    'network.launchpad.deposit-signature': {
+    'network.sqr-payment-gateway-contract.deposit-signature': {
       params: {
         network: { type: 'string' },
-        contractType: { type: 'string' },
         contractAddress: { type: 'string' },
         userId: { type: 'string' },
         transactionId: { type: 'string' },
         account: { type: 'string' },
         amount: { type: 'number' },
-      } as HandlerParams<GetLaunchpadDepositSignatureParams>,
+      } as HandlerParams<GetSQRPaymentGatewayDepositSignatureParams>,
       async handler(
-        ctx: Context<GetLaunchpadDepositSignatureParams>,
-      ): Promise<GetSignatureDepositResponse> {
+        ctx: Context<GetSQRPaymentGatewayDepositSignatureParams>,
+      ): Promise<GetSQRpProRataDepositSignatureResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
           const network = checkIfNetwork(ctx?.params?.network);
-          checkIfContractType(ctx?.params?.contractType);
           const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
           const account = checkIfAddress(ctx?.params?.account);
           const { userId, transactionId, amount } = ctx?.params;
@@ -113,7 +111,7 @@ const handlerFunc: HandlerFunc = () => ({
             throw new MissingServicePrivateKey();
           }
 
-          const { owner, getSqrSignature, getErc20Token } = context;
+          const { owner, getErc20Token, getSqrPaymentGateway } = context;
 
           let nonce = -1;
           let timestampNow = -1;
@@ -121,10 +119,10 @@ const handlerFunc: HandlerFunc = () => ({
           let dateLimit = new Date(1900, 1, 1);
           let erc20Decimals = 18;
 
-          const sqrSignature = getSqrSignature(contractAddress);
+          const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
 
           if (CONSTANT_TIME_LIMIT) {
-            nonce = Number(await sqrSignature.getDepositNonce(userId));
+            nonce = Number(await sqrPaymentGateway.getDepositNonce(userId));
             timestampLimit = UINT32_MAX;
           } else {
             const [block, _erc20Decimals, nonceRaw] = await Promise.all([
@@ -136,11 +134,11 @@ const handlerFunc: HandlerFunc = () => ({
               cacheMachine.call<number>(
                 () => `${contractAddress}-contract-settings`,
                 async () => {
-                  const tokenAddress = await getSqrSignature(contractAddress).erc20Token();
+                  const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
                   return Number(await getErc20Token(tokenAddress).decimals());
                 },
               ),
-              sqrSignature.getDepositNonce(userId),
+              sqrPaymentGateway.getDepositNonce(userId),
             ]);
             erc20Decimals = _erc20Decimals;
             nonce = Number(nonceRaw);
@@ -153,7 +151,7 @@ const handlerFunc: HandlerFunc = () => ({
 
           const amountInWei = toWeiWithFixed(amount, erc20Decimals);
 
-          const signature = await signMessageForDeposit(
+          const signature = await signMessageForSQRPaymentGatewayDeposit(
             owner,
             userId,
             transactionId,
@@ -186,19 +184,18 @@ const handlerFunc: HandlerFunc = () => ({
       },
     },
 
-    'network.launchpad.deposit-signature-instant': {
+    'network.sqr-payment-gateway-contract.deposit-signature-instant': {
       params: {
         network: { type: 'string' },
-        contractType: { type: 'string' },
         contractAddress: { type: 'string' },
         userId: { type: 'string' },
         transactionId: { type: 'string' },
         account: { type: 'string' },
         amount: { type: 'number' },
-      } as HandlerParams<GetLaunchpadDepositSignatureParams>,
+      } as HandlerParams<GetSQRPaymentGatewayDepositSignatureParams>,
       async handler(
-        ctx: Context<GetLaunchpadDepositSignatureParams>,
-      ): Promise<GetSignatureDepositResponse> {
+        ctx: Context<GetSQRPaymentGatewayDepositSignatureParams>,
+      ): Promise<GetSQRpProRataDepositSignatureResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -210,7 +207,7 @@ const handlerFunc: HandlerFunc = () => ({
             throw new MissingServicePrivateKey();
           }
 
-          const { owner, getSqrSignature, getErc20Token } = context;
+          const { owner, getSqrPaymentGateway, getErc20Token } = context;
 
           let nonce = 0;
           let timestampNow = -1;
@@ -219,14 +216,14 @@ const handlerFunc: HandlerFunc = () => ({
           const erc20Decimals = await cacheMachine.call<number>(
             () => `${contractAddress}-contract-settings`,
             async () => {
-              const tokenAddress = await getSqrSignature(contractAddress).erc20Token();
+              const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
               return Number(await getErc20Token(tokenAddress).decimals());
             },
           );
 
           const amountInWei = toWeiWithFixed(amount, erc20Decimals);
 
-          const signature = await signMessageForDeposit(
+          const signature = await signMessageForSQRPaymentGatewayDeposit(
             owner,
             userId,
             transactionId,
@@ -239,6 +236,103 @@ const handlerFunc: HandlerFunc = () => ({
           const dateLimit = dayjs()
             .add(TIME_OUT + INDEXER_OFFSET, 'seconds')
             .toDate();
+
+          services.changeStats(network, (stats) => ({ signatures: ++stats.signatures }));
+
+          return {
+            signature,
+            amountInWei: String(amountInWei),
+            nonce,
+            timestampNow,
+            timestampLimit,
+            dateLimit,
+          };
+        } catch (err) {
+          services.changeStats(network, (stats) => ({
+            errorCount: ++stats.errorCount,
+            lastError: parseError(err),
+            lastErrorStack: parseStack(err),
+            lastErrorDate: new Date(),
+          }));
+
+          throw err;
+        }
+      },
+    },
+
+    'network.sqr-p-pro-rata-contract.deposit-signature': {
+      params: {
+        network: { type: 'string' },
+        contractAddress: { type: 'string' },
+        account: { type: 'string' },
+        amount: { type: 'number' },
+        boost: { type: 'boolean' },
+        transactionId: { type: 'string' },
+      } as HandlerParams<GetSQRpProRataDepositSignatureParams>,
+      async handler(
+        ctx: Context<GetSQRpProRataDepositSignatureParams>,
+      ): Promise<GetSQRpProRataDepositSignatureResponse> {
+        const network = checkIfNetwork(ctx?.params?.network);
+
+        try {
+          const network = checkIfNetwork(ctx?.params?.network);
+          const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
+          const account = checkIfAddress(ctx?.params?.account);
+          const { transactionId, amount, boost } = ctx?.params;
+          const context = services.getNetworkContext(network);
+          if (!context) {
+            throw new MissingServicePrivateKey();
+          }
+
+          const { owner, getErc20Token, getSqrpProRata } = context;
+
+          let nonce = -1;
+          let timestampNow = -1;
+          let timestampLimit = -1;
+          let dateLimit = new Date(1900, 1, 1);
+          let erc20Decimals = 18;
+
+          const sqrpProRata = getSqrpProRata(contractAddress);
+
+          if (CONSTANT_TIME_LIMIT) {
+            nonce = Number(await sqrpProRata.getNonce(account));
+            timestampLimit = UINT32_MAX;
+          } else {
+            const [block, _erc20Decimals, nonceRaw] = await Promise.all([
+              cacheMachine.call(
+                () => BLOCK_KEY,
+                () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
+                CACHE_TIME_OUT,
+              ),
+              cacheMachine.call<number>(
+                () => `${contractAddress}-contract-settings`,
+                async () => {
+                  const tokenAddress = await getSqrpProRata(contractAddress).baseToken();
+                  return Number(await getErc20Token(tokenAddress).decimals());
+                },
+              ),
+              sqrpProRata.getNonce(account),
+            ]);
+            erc20Decimals = _erc20Decimals;
+            nonce = Number(nonceRaw);
+            timestampNow = block.timestamp;
+            timestampLimit = timestampNow + TIME_OUT;
+            dateLimit = dayjs()
+              .add(TIME_OUT + INDEXER_OFFSET, 'seconds')
+              .toDate();
+          }
+
+          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
+
+          const signature = await signMessageForSQRpProRataDeposit(
+            owner,
+            account,
+            amountInWei,
+            boost,
+            nonce,
+            transactionId,
+            timestampLimit,
+          );
 
           services.changeStats(network, (stats) => ({ signatures: ++stats.signatures }));
 
