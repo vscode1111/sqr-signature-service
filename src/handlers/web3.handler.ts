@@ -207,9 +207,8 @@ const handlerFunc: HandlerFunc = () => ({
           const { getSqrPaymentGateway } = context;
 
           const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
-          const nonce = Number(await sqrPaymentGateway.getDepositNonce(userId));
-
-          return nonce;
+          const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId)
+          return Number(nonceRaw);
         } catch (err) {
           services.changeStats(network, (stats) => ({
             errorCount: ++stats.errorCount,
