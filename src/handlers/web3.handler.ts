@@ -25,6 +25,7 @@ import {
   GetBlockResponse,
   GetNetworkParams,
   GetSQRPaymentGatewayDepositSignatureParams,
+  GetSQRPaymentGatewayNonceParams,
   GetSQRpProRataDepositSignatureParams,
   GetSQRpProRataDepositSignatureResponse,
   HandlerParams,
@@ -171,6 +172,43 @@ const handlerFunc: HandlerFunc = () => ({
             timestampLimit,
             dateLimit,
           };
+        } catch (err) {
+          services.changeStats(network, (stats) => ({
+            errorCount: ++stats.errorCount,
+            lastError: parseError(err),
+            lastErrorStack: parseStack(err),
+            lastErrorDate: new Date(),
+          }));
+
+          throw err;
+        }
+      },
+    },
+
+    'network.sqr-payment-gateway-contract.nonce': {
+      params: {
+        network: { type: 'string' },
+        contractAddress: { type: 'string' },
+        userId: { type: 'string' },
+      } as HandlerParams<GetSQRPaymentGatewayNonceParams>,
+      async handler(
+        ctx: Context<GetSQRPaymentGatewayNonceParams>,
+      ): Promise<number> {
+        const network = checkIfNetwork(ctx?.params?.network);
+
+        try {
+          const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
+          const { userId } = ctx?.params;
+          const context = services.getNetworkContext(network);
+          if (!context) {
+            throw new MissingServicePrivateKey();
+          }
+
+          const { getSqrPaymentGateway } = context;
+
+          const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
+          const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId)
+          return Number(nonceRaw);
         } catch (err) {
           services.changeStats(network, (stats) => ({
             errorCount: ++stats.errorCount,

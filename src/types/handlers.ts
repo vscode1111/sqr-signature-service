@@ -30,6 +30,11 @@ export interface GetSQRPaymentGatewayDepositSignatureParams extends GetNetworkPa
   amount: number;
 }
 
+export interface GetSQRPaymentGatewayNonceParams extends GetNetworkParams {
+  contractAddress: string;
+  userId: string;
+}
+
 export interface GetSQRpProRataDepositSignatureResponse {
   signature: string;
   amountInWei: string;
