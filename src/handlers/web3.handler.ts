@@ -206,16 +206,8 @@ const handlerFunc: HandlerFunc = () => ({
 
           const { getSqrPaymentGateway } = context;
 
-          let nonce = -1;
-
           const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
-
-          if (CONSTANT_TIME_LIMIT) {
-            nonce = Number(await sqrPaymentGateway.getDepositNonce(userId));
-          } else {
-            const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId);
-            nonce = Number(nonceRaw);
-          }
+          const nonce = Number(await sqrPaymentGateway.getDepositNonce(userId));
 
           return nonce;
         } catch (err) {
