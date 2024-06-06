@@ -13,6 +13,7 @@ export const routes: ApiRouteSchema[] = modifyRoutes([
       'POST sqr-payment-gateway-contract/nonce': `${apiPrefix}network.sqr-payment-gateway-contract.nonce`,
       'POST sqr-payment-gateway-contract/deposit-signature': `${apiPrefix}network.sqr-payment-gateway-contract.deposit-signature`,
       'POST sqr-payment-gateway-contract/deposit-signature-instant': `${apiPrefix}network.sqr-payment-gateway-contract.deposit-signature-instant`,
+      'POST sqr-p-pro-rata-contract/nonce': `${apiPrefix}network.sqr-p-pro-rata-contract.nonce`,
       'POST sqr-p-pro-rata-contract/deposit-signature': `${apiPrefix}network.sqr-p-pro-rata-contract.deposit-signature`,
     },
   },

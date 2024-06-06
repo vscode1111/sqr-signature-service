@@ -192,9 +192,7 @@ const handlerFunc: HandlerFunc = () => ({
         contractAddress: { type: 'string' },
         userId: { type: 'string' },
       } as HandlerParams<GetSQRPaymentGatewayNonceParams>,
-      async handler(
-        ctx: Context<GetSQRPaymentGatewayNonceParams>,
-      ): Promise<number> {
+      async handler(ctx: Context<GetSQRPaymentGatewayNonceParams>): Promise<number> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -208,7 +206,7 @@ const handlerFunc: HandlerFunc = () => ({
           const { getSqrPaymentGateway } = context;
 
           const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
-          const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId)
+          const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId);
           return Number(nonceRaw);
         } catch (err) {
           services.changeStats(network, (stats) => ({
@@ -402,9 +400,7 @@ const handlerFunc: HandlerFunc = () => ({
         contractAddress: { type: 'string' },
         account: { type: 'string' },
       } as HandlerParams<GetSQRpProRataNonceParams>,
-      async handler(
-        ctx: Context<GetSQRpProRataNonceParams>,
-      ): Promise<number> {
+      async handler(ctx: Context<GetSQRpProRataNonceParams>): Promise<number> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -418,7 +414,7 @@ const handlerFunc: HandlerFunc = () => ({
           const { getSqrpProRata } = context;
 
           const sqrpProRata = getSqrpProRata(contractAddress);
-          const nonceRaw = sqrpProRata.getNonce(account);
+          const nonceRaw = await sqrpProRata.getNonce(account);
           return Number(nonceRaw);
         } catch (err) {
           services.changeStats(network, (stats) => ({
