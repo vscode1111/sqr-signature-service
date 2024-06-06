@@ -52,6 +52,11 @@ export interface GetSQRpProRataDepositSignatureParams extends GetNetworkParams {
   transactionId: string;
 }
 
+export interface GetSQRpProRataNonceParams extends GetNetworkParams {
+  contractAddress: string;
+  account: string;
+}
+
 export interface GetSQRpProRataDepositSignatureResponse {
   signature: string;
   amountInWei: string;
