@@ -394,6 +394,43 @@ const handlerFunc: HandlerFunc = () => ({
         }
       },
     },
+
+    'network.sqr-p-pro-rata-contract.nonce': {
+      params: {
+        network: { type: 'string' },
+        contractAddress: { type: 'string' },
+        account: { type: 'string' },
+      } as HandlerParams<GetSQRpProRataNonceParams>,
+      async handler(
+        ctx: Context<GetSQRpProRataNonceParams>,
+      ): Promise<number> {
+        const network = checkIfNetwork(ctx?.params?.network);
+
+        try {
+          const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
+          const account = checkIfAddress(ctx?.params?.account);
+          const context = services.getNetworkContext(network);
+          if (!context) {
+            throw new MissingServicePrivateKey();
+          }
+
+          const { getSqrpProRata } = context;
+
+          const sqrpProRata = getSqrpProRata(contractAddress);
+          const nonceRaw = sqrpProRata.getNonce(account);
+          return Number(nonceRaw);
+        } catch (err) {
+          services.changeStats(network, (stats) => ({
+            errorCount: ++stats.errorCount,
+            lastError: parseError(err),
+            lastErrorStack: parseStack(err),
+            lastErrorDate: new Date(),
+          }));
+
+          throw err;
+        }
+      },
+    },
   },
 });
 
