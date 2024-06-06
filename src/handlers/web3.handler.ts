@@ -28,6 +28,7 @@ import {
   GetSQRPaymentGatewayNonceParams,
   GetSQRpProRataDepositSignatureParams,
   GetSQRpProRataDepositSignatureResponse,
+  GetSQRpProRataNonceParams,
   HandlerParams,
 } from '~types';
 import { signMessageForSQRPaymentGatewayDeposit, signMessageForSQRpProRataDeposit } from '~utils';
