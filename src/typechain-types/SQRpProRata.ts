@@ -32,15 +32,13 @@ export declare namespace SQRpProRata {
 
   export type UserStruct = {
     depositedAmount: BigNumberish;
-    contributionAmount: BigNumberish;
     nonce: BigNumberish;
   };
 
-  export type UserStructOutput = [
-    depositedAmount: bigint,
-    contributionAmount: bigint,
-    nonce: bigint
-  ] & { depositedAmount: bigint; contributionAmount: bigint; nonce: bigint };
+  export type UserStructOutput = [depositedAmount: bigint, nonce: bigint] & {
+    depositedAmount: bigint;
+    nonce: bigint;
+  };
 }
 
 export interface SQRpProRataInterface extends Interface {
@@ -59,7 +57,7 @@ export interface SQRpProRataInterface extends Interface {
       | "fetchTransactionItem"
       | "fetchUser"
       | "getBalance"
-      | "getNonce"
+      | "getDepositNonce"
       | "getProcessedUserIndex"
       | "getUserCount"
       | "goal"
@@ -120,14 +118,7 @@ export interface SQRpProRataInterface extends Interface {
   encodeFunctionData(functionFragment: "closeDate", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "depositSig",
-    values: [
-      AddressLike,
-      BigNumberish,
-      boolean,
-      string,
-      BigNumberish,
-      BytesLike
-    ]
+    values: [BigNumberish, boolean, string, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "fetchTransactionItem",
@@ -142,7 +133,7 @@ export interface SQRpProRataInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getNonce",
+    functionFragment: "getDepositNonce",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
@@ -240,7 +231,10 @@ export interface SQRpProRataInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "fetchUser", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getNonce", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getDepositNonce",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getProcessedUserIndex",
     data: BytesLike
@@ -438,7 +432,6 @@ export interface SQRpProRata extends BaseContract {
 
   depositSig: TypedContractMethod<
     [
-      account: AddressLike,
       amount: BigNumberish,
       boost: boolean,
       transactionId: string,
@@ -463,7 +456,11 @@ export interface SQRpProRata extends BaseContract {
 
   getBalance: TypedContractMethod<[], [bigint], "view">;
 
-  getNonce: TypedContractMethod<[account: AddressLike], [bigint], "view">;
+  getDepositNonce: TypedContractMethod<
+    [account: AddressLike],
+    [bigint],
+    "view"
+  >;
 
   getProcessedUserIndex: TypedContractMethod<[], [bigint], "view">;
 
@@ -558,7 +555,6 @@ export interface SQRpProRata extends BaseContract {
     nameOrSignature: "depositSig"
   ): TypedContractMethod<
     [
-      account: AddressLike,
       amount: BigNumberish,
       boost: boolean,
       transactionId: string,
@@ -586,7 +582,7 @@ export interface SQRpProRata extends BaseContract {
     nameOrSignature: "getBalance"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "getNonce"
+    nameOrSignature: "getDepositNonce"
   ): TypedContractMethod<[account: AddressLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "getProcessedUserIndex"

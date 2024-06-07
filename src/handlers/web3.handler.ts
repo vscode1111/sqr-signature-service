@@ -332,7 +332,7 @@ const handlerFunc: HandlerFunc = () => ({
           const sqrpProRata = getSqrpProRata(contractAddress);
 
           if (CONSTANT_TIME_LIMIT) {
-            nonce = Number(await sqrpProRata.getNonce(account));
+            nonce = Number(await sqrpProRata.getDepositNonce(account));
             timestampLimit = UINT32_MAX;
           } else {
             const [block, _erc20Decimals, nonceRaw] = await Promise.all([
@@ -348,7 +348,7 @@ const handlerFunc: HandlerFunc = () => ({
                   return Number(await getErc20Token(tokenAddress).decimals());
                 },
               ),
-              sqrpProRata.getNonce(account),
+              sqrpProRata.getDepositNonce(account),
             ]);
             erc20Decimals = _erc20Decimals;
             nonce = Number(nonceRaw);
@@ -414,7 +414,7 @@ const handlerFunc: HandlerFunc = () => ({
           const { getSqrpProRata } = context;
 
           const sqrpProRata = getSqrpProRata(contractAddress);
-          const nonceRaw = await sqrpProRata.getNonce(account);
+          const nonceRaw = await sqrpProRata.getDepositNonce(account);
           return Number(nonceRaw);
         } catch (err) {
           services.changeStats(network, (stats) => ({

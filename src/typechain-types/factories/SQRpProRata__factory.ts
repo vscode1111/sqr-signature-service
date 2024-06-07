@@ -474,11 +474,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-      {
         internalType: "uint256",
         name: "amount",
         type: "uint256",
@@ -553,11 +548,6 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "uint256",
-            name: "contributionAmount",
-            type: "uint256",
-          },
-          {
             internalType: "uint32",
             name: "nonce",
             type: "uint32",
@@ -592,7 +582,7 @@ const _abi = [
         type: "address",
       },
     ],
-    name: "getNonce",
+    name: "getDepositNonce",
     outputs: [
       {
         internalType: "uint32",
