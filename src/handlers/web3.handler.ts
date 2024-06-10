@@ -119,7 +119,7 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampNow = -1;
           let timestampLimit = -1;
           let dateLimit = new Date(1900, 1, 1);
-          let erc20Decimals = 18;
+          let decimals = 18;
 
           const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
 
@@ -127,7 +127,7 @@ const handlerFunc: HandlerFunc = () => ({
             nonce = Number(await sqrPaymentGateway.getDepositNonce(userId));
             timestampLimit = UINT32_MAX;
           } else {
-            const [block, _erc20Decimals, nonceRaw] = await Promise.all([
+            const [block, _decimals, nonceRaw] = await Promise.all([
               cacheMachine.call(
                 () => BLOCK_KEY,
                 () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
@@ -142,7 +142,7 @@ const handlerFunc: HandlerFunc = () => ({
               ),
               sqrPaymentGateway.getDepositNonce(userId),
             ]);
-            erc20Decimals = _erc20Decimals;
+            decimals = _decimals;
             nonce = Number(nonceRaw);
             timestampNow = block.timestamp;
             timestampLimit = timestampNow + TIME_OUT;
@@ -151,7 +151,7 @@ const handlerFunc: HandlerFunc = () => ({
               .toDate();
           }
 
-          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
+          const amountInWei = toWeiWithFixed(amount, decimals);
 
           const signature = await signMessageForSQRPaymentGatewayDeposit(
             owner,
@@ -250,7 +250,7 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampNow = -1;
           let timestampLimit = UINT32_MAX;
 
-          const erc20Decimals = await cacheMachine.call<number>(
+          const decimals = await cacheMachine.call<number>(
             () => `${contractAddress}-contract-settings`,
             async () => {
               const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
@@ -258,7 +258,7 @@ const handlerFunc: HandlerFunc = () => ({
             },
           );
 
-          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
+          const amountInWei = toWeiWithFixed(amount, decimals);
 
           const signature = await signMessageForSQRPaymentGatewayDeposit(
             owner,
@@ -327,7 +327,7 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampNow = -1;
           let timestampLimit = -1;
           let dateLimit = new Date(1900, 1, 1);
-          let erc20Decimals = 18;
+          let decimals = 18;
 
           const sqrpProRata = getSqrpProRata(contractAddress);
 
@@ -335,7 +335,7 @@ const handlerFunc: HandlerFunc = () => ({
             nonce = Number(await sqrpProRata.getDepositNonce(account));
             timestampLimit = UINT32_MAX;
           } else {
-            const [block, _erc20Decimals, nonceRaw] = await Promise.all([
+            const [block, _decimals, nonceRaw] = await Promise.all([
               cacheMachine.call(
                 () => BLOCK_KEY,
                 () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
@@ -350,7 +350,7 @@ const handlerFunc: HandlerFunc = () => ({
               ),
               sqrpProRata.getDepositNonce(account),
             ]);
-            erc20Decimals = _erc20Decimals;
+            decimals = _decimals;
             nonce = Number(nonceRaw);
             timestampNow = block.timestamp;
             timestampLimit = timestampNow + TIME_OUT;
@@ -359,7 +359,7 @@ const handlerFunc: HandlerFunc = () => ({
               .toDate();
           }
 
-          const amountInWei = toWeiWithFixed(amount, erc20Decimals);
+          const amountInWei = toWeiWithFixed(amount, decimals);
 
           const signature = await signMessageForSQRpProRataDeposit(
             owner,
