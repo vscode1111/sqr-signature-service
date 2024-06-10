@@ -1,3 +1,3 @@
 export function getCacheContractSettingKey(contractAddress: string) {
-  return `CONTRACT-SETTING-${contractAddress}`;
+  return `CONTRACT-SETTINGS-${contractAddress}`;
 }
