@@ -58,7 +58,10 @@ export interface SQRpProRataInterface extends Interface {
       | "fetchUser"
       | "getBalance"
       | "getDepositNonce"
+      | "getDepositedAmount"
       | "getProcessedUserIndex"
+      | "getTotalDeposited"
+      | "getUserAddress"
       | "getUserCount"
       | "goal"
       | "initialize"
@@ -137,8 +140,20 @@ export interface SQRpProRataInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getDepositedAmount",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getProcessedUserIndex",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTotalDeposited",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUserAddress",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getUserCount",
@@ -236,7 +251,19 @@ export interface SQRpProRataInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getDepositedAmount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getProcessedUserIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTotalDeposited",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUserAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -462,7 +489,17 @@ export interface SQRpProRata extends BaseContract {
     "view"
   >;
 
+  getDepositedAmount: TypedContractMethod<
+    [account: AddressLike],
+    [bigint],
+    "view"
+  >;
+
   getProcessedUserIndex: TypedContractMethod<[], [bigint], "view">;
+
+  getTotalDeposited: TypedContractMethod<[], [bigint], "view">;
+
+  getUserAddress: TypedContractMethod<[index: BigNumberish], [string], "view">;
 
   getUserCount: TypedContractMethod<[], [bigint], "view">;
 
@@ -585,8 +622,17 @@ export interface SQRpProRata extends BaseContract {
     nameOrSignature: "getDepositNonce"
   ): TypedContractMethod<[account: AddressLike], [bigint], "view">;
   getFunction(
+    nameOrSignature: "getDepositedAmount"
+  ): TypedContractMethod<[account: AddressLike], [bigint], "view">;
+  getFunction(
     nameOrSignature: "getProcessedUserIndex"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getTotalDeposited"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getUserAddress"
+  ): TypedContractMethod<[index: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "getUserCount"
   ): TypedContractMethod<[], [bigint], "view">;

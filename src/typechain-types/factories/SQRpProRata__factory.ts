@@ -128,11 +128,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "InvalidNonce",
-    type: "error",
-  },
-  {
-    inputs: [],
     name: "InvalidSignature",
     type: "error",
   },
@@ -594,6 +589,25 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "getDepositedAmount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "getProcessedUserIndex",
     outputs: [
@@ -601,6 +615,38 @@ const _abi = [
         internalType: "uint32",
         name: "",
         type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getTotalDeposited",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint32",
+        name: "index",
+        type: "uint32",
+      },
+    ],
+    name: "getUserAddress",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
