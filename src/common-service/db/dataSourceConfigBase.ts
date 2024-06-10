@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
+import { DB_POOL_SIZE } from '~common-service/constants';
 import { config, isBuildRun } from '../config';
 
 function getPrefix() {
@@ -24,4 +25,10 @@ export const dataSourceConfigBase: PostgresConnectionOptions = {
   username: config.connections?.pg?.user,
   password: config.connections?.pg?.password,
   database: config.connections?.pg?.database,
+  extra: {
+    poolSize: DB_POOL_SIZE,
+    connectionTimeoutMillis: 2000,
+    query_timeout: 1000,
+    statement_timeout: 1000,
+  },
 };

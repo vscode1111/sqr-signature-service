@@ -6,7 +6,7 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 import { IdLock, Promisable, Started, Stopped, toDate } from '~common';
 //Do not change to '~db', otherwise "npm run start" doesn't work
 import { Block, Contract, ContractType, Event, Network, Transaction } from '../../db/entities';
-import { GENESIS_BLOCK_NUMBER, INDEXER_CONCURRENCY_COUNT } from '../constants';
+import { DB_CONCURRENCY_COUNT, GENESIS_BLOCK_NUMBER } from '../constants';
 import { ServiceBrokerBase } from '../core';
 import { DeployNetworkKey, GetBlockFn, GetTransactionByHashFn, Web3Event } from '../types';
 import { deployNetworks, logInfo } from '../utils';
@@ -18,15 +18,15 @@ const CREATED_DATABASE = false;
 export class DataStorageBase extends ServiceBrokerBase implements Started, Stopped {
   protected dataSourceOptions: PostgresConnectionOptions;
   protected dataSource!: DataSource;
-  protected getContractDataFn: GetContractDataFn;
   protected networkRepository!: Repository<Network>;
   protected contractRepository!: Repository<Contract>;
   protected eventRepository!: Repository<Event>;
   protected transactionRepository!: Repository<Transaction>;
   protected isDestroyed: boolean;
+  protected idLock: IdLock;
+  protected getContractDataFn: GetContractDataFn;
   protected getBlockFn!: GetBlockFn;
   protected getTransactionByHashFn!: GetTransactionByHashFn;
-  protected idLock: IdLock;
 
   constructor(
     broker: ServiceBroker,
@@ -323,7 +323,7 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
 
           await this.saveEvent(event, dbNetwork, dbContract, dbTransaction, eventRepository);
         },
-        { concurrency: INDEXER_CONCURRENCY_COUNT },
+        { concurrency: DB_CONCURRENCY_COUNT },
       );
 
       dbContract.syncBlockNumber = blockNumber + 1;
