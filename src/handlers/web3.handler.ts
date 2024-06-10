@@ -31,7 +31,11 @@ import {
   GetSQRpProRataNonceParams,
   HandlerParams,
 } from '~types';
-import { signMessageForSQRPaymentGatewayDeposit, signMessageForSQRpProRataDeposit } from '~utils';
+import {
+  getCacheContractSettingKey,
+  signMessageForSQRPaymentGatewayDeposit,
+  signMessageForSQRpProRataDeposit,
+} from '~utils';
 
 // const TIME_OUT = 300;
 // const INDEXER_OFFSET = 300;
@@ -134,7 +138,7 @@ const handlerFunc: HandlerFunc = () => ({
                 CACHE_TIME_OUT,
               ),
               cacheMachine.call<number>(
-                () => `${contractAddress}-contract-settings`,
+                () => getCacheContractSettingKey(contractAddress),
                 async () => {
                   const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
                   return Number(await getErc20Token(tokenAddress).decimals());
@@ -251,7 +255,7 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampLimit = UINT32_MAX;
 
           const decimals = await cacheMachine.call<number>(
-            () => `${contractAddress}-contract-settings`,
+            () => getCacheContractSettingKey(contractAddress),
             async () => {
               const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
               return Number(await getErc20Token(tokenAddress).decimals());
@@ -342,7 +346,7 @@ const handlerFunc: HandlerFunc = () => ({
                 CACHE_TIME_OUT,
               ),
               cacheMachine.call<number>(
-                () => `${contractAddress}-contract-settings`,
+                () => getCacheContractSettingKey(contractAddress),
                 async () => {
                   const tokenAddress = await getSqrpProRata(contractAddress).baseToken();
                   return Number(await getErc20Token(tokenAddress).decimals());
