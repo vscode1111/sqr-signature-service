@@ -93,7 +93,7 @@ const handlerFunc: HandlerFunc = () => ({
       },
     },
 
-    'network.sqr-payment-gateway-contract.deposit-signature': {
+    'network.payment-gateway-contract.deposit-signature': {
       params: {
         network: { type: 'string' },
         contractAddress: { type: 'string' },
@@ -190,7 +190,7 @@ const handlerFunc: HandlerFunc = () => ({
       },
     },
 
-    'network.sqr-payment-gateway-contract.nonce': {
+    'network.payment-gateway-contract.nonce': {
       params: {
         network: { type: 'string' },
         contractAddress: { type: 'string' },
@@ -225,7 +225,7 @@ const handlerFunc: HandlerFunc = () => ({
       },
     },
 
-    'network.sqr-payment-gateway-contract.deposit-signature-instant': {
+    'network.payment-gateway-contract.deposit-signature-instant': {
       params: {
         network: { type: 'string' },
         contractAddress: { type: 'string' },
@@ -301,7 +301,7 @@ const handlerFunc: HandlerFunc = () => ({
       },
     },
 
-    'network.sqr-p-pro-rata-contract.deposit-signature': {
+    'network.pro-rata-contract.deposit-signature': {
       params: {
         network: { type: 'string' },
         contractAddress: { type: 'string' },
@@ -398,7 +398,7 @@ const handlerFunc: HandlerFunc = () => ({
       },
     },
 
-    'network.sqr-p-pro-rata-contract.nonce': {
+    'network.pro-rata-contract.nonce': {
       params: {
         network: { type: 'string' },
         contractAddress: { type: 'string' },
