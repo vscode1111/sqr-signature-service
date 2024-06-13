@@ -1,7 +1,7 @@
 import { Wallet } from 'ethers';
 import { signEncodedMessage } from '~common';
 
-export async function signMessageForSQRPaymentGatewayDeposit(
+export async function signMessageForPaymentGatewayDeposit(
   signer: Wallet,
   userId: string,
   transactionId: string,
@@ -18,7 +18,7 @@ export async function signMessageForSQRPaymentGatewayDeposit(
   );
 }
 
-export async function signMessageForSQRpProRataDeposit(
+export async function signMessageForProRataDeposit(
   signer: Wallet,
   account: string,
   amount: bigint,

@@ -33,8 +33,8 @@ import {
 } from '~types';
 import {
   getCacheContractSettingKey,
-  signMessageForSQRPaymentGatewayDeposit,
-  signMessageForSQRpProRataDeposit,
+  signMessageForPaymentGatewayDeposit,
+  signMessageForProRataDeposit,
 } from '~utils';
 
 // const TIME_OUT = 300;
@@ -157,7 +157,7 @@ const handlerFunc: HandlerFunc = () => ({
 
           const amountInWei = toWeiWithFixed(amount, decimals);
 
-          const signature = await signMessageForSQRPaymentGatewayDeposit(
+          const signature = await signMessageForPaymentGatewayDeposit(
             owner,
             userId,
             transactionId,
@@ -264,7 +264,7 @@ const handlerFunc: HandlerFunc = () => ({
 
           const amountInWei = toWeiWithFixed(amount, decimals);
 
-          const signature = await signMessageForSQRPaymentGatewayDeposit(
+          const signature = await signMessageForPaymentGatewayDeposit(
             owner,
             userId,
             transactionId,
@@ -365,7 +365,7 @@ const handlerFunc: HandlerFunc = () => ({
 
           const amountInWei = toWeiWithFixed(amount, decimals);
 
-          const signature = await signMessageForSQRpProRataDeposit(
+          const signature = await signMessageForProRataDeposit(
             owner,
             account,
             amountInWei,
