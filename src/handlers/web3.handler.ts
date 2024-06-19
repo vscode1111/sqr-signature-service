@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
+import { BigNumberish } from 'ethers';
 import { Context } from 'moleculer';
 import {
+  DAYS,
   MINUTES,
   checkIfAddress,
   checkIfNumber,
@@ -29,9 +31,12 @@ import {
   GetSQRpProRataDepositSignatureParams,
   GetSQRpProRataDepositSignatureResponse,
   GetSQRpProRataNonceParams,
+  GetTxParams,
+  GetTxResponse,
   HandlerParams,
 } from '~types';
 import {
+  decodeFunctionParams,
   getCacheContractSettingKey,
   signMessageForPaymentGatewayDeposit,
   signMessageForProRataDeposit,
@@ -44,6 +49,7 @@ import {
 const TIME_OUT = 5 * MINUTES;
 const INDEXER_OFFSET = 5 * MINUTES;
 const CACHE_TIME_OUT = Math.round(TIME_OUT / 10);
+const ABI_CACHE_TIME_OUT = DAYS;
 
 const CONSTANT_TIME_LIMIT = false;
 const BLOCK_KEY = 'BLOCK_KEY';
@@ -60,8 +66,6 @@ const handlerFunc: HandlerFunc = () => ({
         id: { type: 'string' },
       } as HandlerParams<GetBlockParams>,
       async handler(ctx: Context<GetBlockParams>): Promise<GetBlockResponse> {
-        ctx.broker.logger.info(`web3.handler: network.blocks.id`);
-
         const network = checkIfNetwork(ctx?.params?.network);
         const paramId = ctx?.params.id;
 
@@ -74,6 +78,43 @@ const handlerFunc: HandlerFunc = () => ({
         return {
           ...block,
           timestampDate: toDate(block.timestamp),
+        };
+      },
+    },
+
+    'network.tx': {
+      params: {
+        network: { type: 'string' },
+        tx: { type: 'string' },
+      } as HandlerParams<GetTxParams>,
+      async handler(ctx: Context<GetTxParams>): Promise<GetTxResponse> {
+        const network = checkIfNetwork(ctx?.params?.network);
+
+        let tx = ctx?.params?.tx;
+
+        const [txResponse, receiptResponse] = await Promise.all([
+          services.getProvider(network).getTransactionByHash(tx),
+          services.getProvider(network).getTransactionReceipt(tx),
+        ]);
+
+        const { input } = txResponse;
+        const { transactionHash, from, to, blockNumber, status } = receiptResponse;
+
+        const [blockResponse, extra] = await Promise.all([
+          services.getProvider(network).getBlockByNumber(blockNumber),
+          decodeFunctionParams(network, to, input, cacheMachine, ABI_CACHE_TIME_OUT).catch(
+            () => {},
+          ),
+        ]);
+        const { timestamp } = blockResponse;
+
+        return {
+          tx: transactionHash,
+          from,
+          to,
+          timestamp: toDate(timestamp),
+          status,
+          extra,
         };
       },
     },
@@ -123,7 +164,7 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampNow = -1;
           let timestampLimit = -1;
           let dateLimit = new Date(1900, 1, 1);
-          let decimals = 18;
+          let decimals: BigNumberish = 18;
 
           const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
 
@@ -137,11 +178,11 @@ const handlerFunc: HandlerFunc = () => ({
                 () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
                 CACHE_TIME_OUT,
               ),
-              cacheMachine.call<number>(
-                () => getCacheContractSettingKey(contractAddress),
+              cacheMachine.call(
+                () => getCacheContractSettingKey(network, contractAddress),
                 async () => {
                   const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
-                  return Number(await getErc20Token(tokenAddress).decimals());
+                  return getErc20Token(tokenAddress).decimals();
                 },
               ),
               sqrPaymentGateway.getDepositNonce(userId),
@@ -254,11 +295,11 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampNow = -1;
           let timestampLimit = UINT32_MAX;
 
-          const decimals = await cacheMachine.call<number>(
-            () => getCacheContractSettingKey(contractAddress),
+          const decimals = await cacheMachine.call(
+            () => getCacheContractSettingKey(network, contractAddress),
             async () => {
               const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
-              return Number(await getErc20Token(tokenAddress).decimals());
+              return getErc20Token(tokenAddress).decimals();
             },
           );
 
@@ -331,7 +372,7 @@ const handlerFunc: HandlerFunc = () => ({
           let timestampNow = -1;
           let timestampLimit = -1;
           let dateLimit = new Date(1900, 1, 1);
-          let decimals = 18;
+          let decimals: BigNumberish = 18;
 
           const sqrpProRata = getSqrpProRata(contractAddress);
 
@@ -345,11 +386,11 @@ const handlerFunc: HandlerFunc = () => ({
                 () => services.getProvider(network).getBlockByNumber(web3Constants.latest),
                 CACHE_TIME_OUT,
               ),
-              cacheMachine.call<number>(
-                () => getCacheContractSettingKey(contractAddress),
+              cacheMachine.call(
+                () => getCacheContractSettingKey(network, contractAddress),
                 async () => {
                   const tokenAddress = await getSqrpProRata(contractAddress).baseToken();
-                  return Number(await getErc20Token(tokenAddress).decimals());
+                  return getErc20Token(tokenAddress).decimals();
                 },
               ),
               sqrpProRata.getAccountDepositNonce(account),

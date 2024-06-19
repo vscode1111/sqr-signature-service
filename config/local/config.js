@@ -19,6 +19,10 @@ module.exports = {
   },
   web3: {
     ownerPrivateKey: 'e6f8fde90650d548c818fb3676987105e19b345e740429727a381b1237b31340',
+    apiKey: {
+      // bscScan: '1DW6FXAHEENVRQ6G9FI21E7CJ7NUCCM1F6', //scub111
+      bscScan: '9HKJRMFC8K1XZUP5FN68QQWS6PTTKXGQFZ', //scub111sqr
+    },
     provider: {
       bsc: {
         // http: 'https://rpc.ankr.com/bsc/0a92c9288ddd85181db59c48d2eae9d07873954be63e06893de5b4cbcb37842e', //magic

@@ -10,8 +10,8 @@ export function toWei(value: BigNumberish, unitName?: BigNumberish): bigint {
 
 export function toWeiWithFixed(value: BigNumberish, unitName?: BigNumberish): bigint {
   let newValue = value;
-  if (typeof value === 'number' && typeof unitName === 'number') {
-    newValue = new Decimal(value).toFixed(unitName);
+  if (typeof value === 'number' && (typeof unitName === 'number' || typeof unitName === 'bigint')) {
+    newValue = new Decimal(value).toFixed(Number(unitName));
   }
 
   return BigInt(parseUnits(String(newValue), unitName));
@@ -25,7 +25,7 @@ export function toNumber(value: bigint, factor = 1): number {
   return Number(formatEther(value)) * factor;
 }
 
-export function toNumberDecimals(value: BigNumberish, decimals = 18): number {
+export function toNumberDecimals(value: BigNumberish, decimals: BigNumberish = 18): number {
   return Number(formatUnits(value, decimals));
 }
 

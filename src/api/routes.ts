@@ -9,7 +9,8 @@ export const routes: ApiRouteSchema[] = modifyRoutes([
     path: '/:network',
     aliases: {
       'GET addresses': `${apiPrefix}network.addresses`,
-      'GET blocks/:id': `${apiPrefix}network.blocks.id`,
+      'GET block/:id': `${apiPrefix}network.blocks.id`,
+      'GET tx/:tx': `${apiPrefix}network.tx`,
       'POST payment-gateway-contract/nonce': `${apiPrefix}network.payment-gateway-contract.nonce`,
       'POST payment-gateway-contract/deposit-signature': `${apiPrefix}network.payment-gateway-contract.deposit-signature`,
       'POST payment-gateway-contract/deposit-signature-instant': `${apiPrefix}network.payment-gateway-contract.deposit-signature-instant`,

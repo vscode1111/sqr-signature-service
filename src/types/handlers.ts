@@ -1,6 +1,6 @@
 //Do not move to 'handlers' folder. Moleculer was configured to read code from there, not types
 import { ActionParams } from 'moleculer';
-import { Web3Block, Web3ConfigContract } from '~common-service';
+import { Web3Block, Web3ConfigContract, Web3ReceiptStatus } from '~common-service';
 
 export type StatusType = 'missing' | 'exists';
 
@@ -20,6 +20,19 @@ export interface GetBlockParams extends GetNetworkParams {
 
 export interface GetBlockResponse extends Web3Block {
   timestampDate: Date;
+}
+
+export interface GetTxParams extends GetNetworkParams {
+  tx: string;
+}
+
+export interface GetTxResponse {
+  tx: string;
+  from: string;
+  to: string;
+  timestamp: Date;
+  status: Web3ReceiptStatus;
+  extra?: Record<string, any> | void;
 }
 
 export interface GetSQRPaymentGatewayDepositSignatureParams extends GetNetworkParams {
