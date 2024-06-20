@@ -24,6 +24,7 @@ module.exports = {
       // bscScan: '9HKJRMFC8K1XZUP5FN68QQWS6PTTKXGQFZ', //scub111sqr-base
       // bscScan: 'ICEYSPSJ8NU2NZR5SRX3TV685E3GFQNX44', //scub111sqr-test1
       bscScan: 'GPNJ75YBYTT8BG7BGW38TAHA7DUA6MKFKS', //Alexandr Gaidai
+      // bscScan: 'GPNJ75YBYTT8BG7BGW38TAHA7DUA6MKF--', //Wrong
     },
     provider: {
       bsc: {

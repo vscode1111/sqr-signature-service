@@ -93,21 +93,25 @@ const handlerFunc: HandlerFunc = () => ({
 
         let tx = ctx?.params?.tx;
 
+        const provider = services.getProvider(network);
+
         const [txResponse, receiptResponse] = await Promise.all([
-          services.getProvider(network).getTransactionByHash(tx),
-          services.getProvider(network).getTransactionReceipt(tx),
+          provider.getTransactionByHash(tx),
+          provider.getTransactionReceipt(tx),
         ]);
 
         const { input } = txResponse;
         const { transactionHash, from, to, blockNumber, status } = receiptResponse;
 
         const [blockResponse, extra] = await Promise.all([
-          services.getProvider(network).getBlockByNumber(blockNumber),
-          cacheMachine.call(
-            () => getCacheContractAbiKey(network, to),
-            () => decodeFunctionParams(to, input).catch(() => {}),
-            ABI_CACHE_TIME_OUT,
-          ),
+          provider.getBlockByNumber(blockNumber),
+          cacheMachine
+            .call(
+              () => getCacheContractAbiKey(network, to),
+              () => decodeFunctionParams(to, input),
+              ABI_CACHE_TIME_OUT,
+            )
+            .catch(() => {}),
         ]);
         const { timestamp } = blockResponse;
 
