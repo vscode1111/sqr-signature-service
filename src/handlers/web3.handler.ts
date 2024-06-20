@@ -37,6 +37,7 @@ import {
 } from '~types';
 import {
   decodeFunctionParams,
+  getCacheContractAbiKey,
   getCacheContractSettingKey,
   signMessageForPaymentGatewayDeposit,
   signMessageForProRataDeposit,
@@ -102,8 +103,10 @@ const handlerFunc: HandlerFunc = () => ({
 
         const [blockResponse, extra] = await Promise.all([
           services.getProvider(network).getBlockByNumber(blockNumber),
-          decodeFunctionParams(network, to, input, cacheMachine, ABI_CACHE_TIME_OUT).catch(
-            () => {},
+          cacheMachine.call(
+            () => getCacheContractAbiKey(network, to),
+            () => decodeFunctionParams(to, input).catch(() => {}),
+            ABI_CACHE_TIME_OUT,
           ),
         ]);
         const { timestamp } = blockResponse;

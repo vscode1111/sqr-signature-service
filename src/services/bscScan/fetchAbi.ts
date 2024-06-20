@@ -1,10 +1,11 @@
 import axios from 'axios';
+import { ApiError } from '~common';
 import { config } from '~common-service';
 import { BscScanAbiResponse } from './fetchAbi.types';
 
 export async function fetchAbi(contractAddress: string) {
   if (!config?.web3?.apiKey?.bscScan) {
-    return null;
+    throw new ApiError('API Key BscScan is not set', 500);
   }
 
   const abiResponse = await axios.get<BscScanAbiResponse>(
