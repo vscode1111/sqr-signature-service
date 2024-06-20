@@ -1,11 +1,25 @@
 import { Interface } from 'ethers';
 import { ApiError, decodeInput, getFunction } from '~common';
+import { CacheMachine } from '~common-service';
 import { BscScanApi } from '~services/bscScan';
+import { getCacheContractAbiKey } from './misc';
 
 const INVALID_API_KEY_MESSAGE = 'Invalid API Key';
 
-export async function decodeFunctionParams(contractAddress: string, input: string) {
-  const abi = await BscScanApi.fetchAbi(contractAddress);
+export async function decodeFunctionParams(
+  network: string,
+  contractAddress: string,
+  input: string,
+  cacheMachine: CacheMachine,
+  timeOut: number,
+) {
+  const abi = await cacheMachine.call(
+    () => getCacheContractAbiKey(network, contractAddress),
+    async () => {
+      return BscScanApi.fetchAbi(contractAddress);
+    },
+    timeOut,
+  );
 
   if (abi === INVALID_API_KEY_MESSAGE) {
     throw new ApiError(INVALID_API_KEY_MESSAGE, 404);
