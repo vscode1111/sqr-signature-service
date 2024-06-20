@@ -15,9 +15,7 @@ export async function decodeFunctionParams(
 ) {
   const abi = await cacheMachine.call(
     () => getCacheContractAbiKey(network, contractAddress),
-    async () => {
-      return BscScanApi.fetchAbi(contractAddress);
-    },
+    () => BscScanApi.fetchAbi(contractAddress),
     timeOut,
   );
 
