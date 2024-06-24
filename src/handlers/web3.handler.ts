@@ -15,6 +15,7 @@ import {
   CacheMachine,
   HandlerFunc,
   MissingServicePrivateKey,
+  NotFound,
   UINT32_MAX,
   checkIfNetwork,
   commonHandlers,
@@ -66,19 +67,23 @@ const handlerFunc: HandlerFunc = () => ({
         id: { type: 'string' },
       } as HandlerParams<GetBlockParams>,
       async handler(ctx: Context<GetBlockParams>): Promise<GetBlockResponse> {
-        const network = checkIfNetwork(ctx?.params?.network);
-        const paramId = ctx?.params.id;
+        try {
+          const network = checkIfNetwork(ctx?.params?.network);
+          const paramId = ctx?.params.id;
 
-        let id: string | number = paramId;
-        if (paramId !== web3Constants.latest) {
-          id = checkIfNumber(ctx?.params.id);
+          let id: string | number = paramId;
+          if (paramId !== web3Constants.latest) {
+            id = checkIfNumber(ctx?.params.id);
+          }
+
+          const block = await services.getProvider(network).getBlockByNumber(id);
+          return {
+            ...block,
+            timestampDate: toDate(block.timestamp),
+          };
+        } catch (e) {
+          throw new NotFound();
         }
-
-        const block = await services.getProvider(network).getBlockByNumber(id);
-        return {
-          ...block,
-          timestampDate: toDate(block.timestamp),
-        };
       },
     },
 
@@ -94,30 +99,34 @@ const handlerFunc: HandlerFunc = () => ({
 
         const provider = services.getProvider(network);
 
-        const [txResponse, receiptResponse] = await Promise.all([
-          provider.getTransactionByHash(tx),
-          provider.getTransactionReceipt(tx),
-        ]);
+        try {
+          const [txResponse, receiptResponse] = await Promise.all([
+            provider.getTransactionByHash(tx),
+            provider.getTransactionReceipt(tx),
+          ]);
 
-        const { input } = txResponse;
-        const { transactionHash, from, to, blockNumber, status } = receiptResponse;
+          const { input } = txResponse;
+          const { transactionHash, from, to, blockNumber, status } = receiptResponse;
 
-        const [blockResponse, extra] = await Promise.all([
-          provider.getBlockByNumber(blockNumber),
-          decodeFunctionParams(network, to, input, cacheMachine, ABI_CACHE_TIME_OUT).catch(
-            () => {},
-          ),
-        ]);
-        const { timestamp } = blockResponse;
+          const [blockResponse, extra] = await Promise.all([
+            provider.getBlockByNumber(blockNumber),
+            decodeFunctionParams(network, to, input, cacheMachine, ABI_CACHE_TIME_OUT).catch(
+              () => {},
+            ),
+          ]);
+          const { timestamp } = blockResponse;
 
-        return {
-          tx: transactionHash,
-          from,
-          to,
-          timestamp: toDate(timestamp),
-          status,
-          extra,
-        };
+          return {
+            tx: transactionHash,
+            from,
+            to,
+            timestamp: toDate(timestamp),
+            status,
+            extra,
+          };
+        } catch (e) {
+          throw new NotFound();
+        }
       },
     },
 
