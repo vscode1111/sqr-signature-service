@@ -13,6 +13,7 @@ import {
 } from '~common';
 import {
   CacheMachine,
+  DeployNetworkKey,
   HandlerFunc,
   MissingServicePrivateKey,
   NotFound,
@@ -21,9 +22,11 @@ import {
   commonHandlers,
   web3Constants,
 } from '~common-service';
+import { BABT_ADDRESS } from '~constants';
 import { StatsData } from '~core';
 import { services } from '~index';
 import {
+  GetAccountParams,
   GetBlockParams,
   GetBlockResponse,
   GetNetworkParams,
@@ -111,7 +114,7 @@ const handlerFunc: HandlerFunc = () => ({
           const [blockResponse, extra] = await Promise.all([
             provider.getBlockByNumber(blockNumber),
             decodeFunctionParams(network, to, input, cacheMachine, ABI_CACHE_TIME_OUT).catch(
-              () => {},
+              () => { },
             ),
           ]);
           const { timestamp } = blockResponse;
@@ -472,6 +475,37 @@ const handlerFunc: HandlerFunc = () => ({
           const sqrpProRata = getSqrpProRata(contractAddress);
           const nonceRaw = await sqrpProRata.getAccountDepositNonce(account);
           return Number(nonceRaw);
+        } catch (err) {
+          services.changeStats(network, (stats) => ({
+            errorCount: ++stats.errorCount,
+            lastError: parseError(err),
+            lastErrorStack: parseStack(err),
+            lastErrorDate: new Date(),
+          }));
+
+          throw err;
+        }
+      },
+    },
+
+    'network.babt-contract.account-owns-token': {
+      params: {
+        account: { type: 'string' },
+      } as HandlerParams<GetAccountParams>,
+      async handler(ctx: Context<GetAccountParams>): Promise<boolean> {
+        const network: DeployNetworkKey = 'bsc';
+        try {
+          const account = checkIfAddress(ctx?.params?.account);
+          const context = services.getNetworkContext(network);
+          if (!context) {
+            throw new MissingServicePrivateKey();
+          }
+
+          const { getBABToken } = context;
+
+          const babToken = getBABToken(BABT_ADDRESS);
+          const balance = await babToken.balanceOf(account);
+          return Boolean(balance);
         } catch (err) {
           services.changeStats(network, (stats) => ({
             errorCount: ++stats.errorCount,

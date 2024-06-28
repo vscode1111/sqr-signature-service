@@ -10,7 +10,11 @@ export interface GetNetworkParams {
   network: string;
 }
 
-export interface GetNetworkAddressesParams extends GetNetworkParams {}
+export interface GetAccountParams {
+  account: string;
+}
+
+export interface GetNetworkAddressesParams extends GetNetworkParams { }
 
 export type GetNetworkAddressesResponse = Web3ConfigContract[];
 
