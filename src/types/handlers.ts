@@ -14,7 +14,7 @@ export interface GetAccountParams {
   account: string;
 }
 
-export interface GetNetworkAddressesParams extends GetNetworkParams { }
+export interface GetNetworkAddressesParams extends GetNetworkParams {}
 
 export type GetNetworkAddressesResponse = Web3ConfigContract[];
 
@@ -52,9 +52,9 @@ export interface GetSQRPaymentGatewayNonceParams extends GetNetworkParams {
   userId: string;
 }
 
-export interface GetSQRpProRataDepositSignatureResponse {
+export interface GetSQRPaymentGatewaySignatureResponse {
   signature: string;
-  amountInWei: string;
+  baseAmountInWei: string;
   nonce: number;
   timestampNow: number;
   timestampLimit: number;
@@ -64,8 +64,9 @@ export interface GetSQRpProRataDepositSignatureResponse {
 export interface GetSQRpProRataDepositSignatureParams extends GetNetworkParams {
   contractAddress: string;
   account: string;
-  amount: number;
+  baseAmount: number;
   boost: boolean;
+  boostExchangeRate: number;
   transactionId: string;
 }
 
@@ -76,7 +77,8 @@ export interface GetSQRpProRataNonceParams extends GetNetworkParams {
 
 export interface GetSQRpProRataDepositSignatureResponse {
   signature: string;
-  amountInWei: string;
+  baseAmountInWei: string;
+  boostExchangeRateInWei: string;
   nonce: number;
   timestampNow: number;
   timestampLimit: number;

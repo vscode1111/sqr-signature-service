@@ -6,9 +6,8 @@ import {
   MINUTES,
   checkIfAddress,
   checkIfNumber,
-  parseError,
-  parseStack,
   toDate,
+  toWei,
   toWeiWithFixed,
 } from '~common';
 import {
@@ -32,6 +31,7 @@ import {
   GetNetworkParams,
   GetSQRPaymentGatewayDepositSignatureParams,
   GetSQRPaymentGatewayNonceParams,
+  GetSQRPaymentGatewaySignatureResponse,
   GetSQRpProRataDepositSignatureParams,
   GetSQRpProRataDepositSignatureResponse,
   GetSQRpProRataNonceParams,
@@ -42,6 +42,7 @@ import {
 import {
   decodeFunctionParams,
   getCacheContractSettingKey,
+  monitoringError,
   signMessageForPaymentGatewayDeposit,
   signMessageForProRataDeposit,
 } from '~utils';
@@ -114,7 +115,7 @@ const handlerFunc: HandlerFunc = () => ({
           const [blockResponse, extra] = await Promise.all([
             provider.getBlockByNumber(blockNumber),
             decodeFunctionParams(network, to, input, cacheMachine, ABI_CACHE_TIME_OUT).catch(
-              () => { },
+              () => {},
             ),
           ]);
           const { timestamp } = blockResponse;
@@ -159,7 +160,7 @@ const handlerFunc: HandlerFunc = () => ({
       } as HandlerParams<GetSQRPaymentGatewayDepositSignatureParams>,
       async handler(
         ctx: Context<GetSQRPaymentGatewayDepositSignatureParams>,
-      ): Promise<GetSQRpProRataDepositSignatureResponse> {
+      ): Promise<GetSQRPaymentGatewaySignatureResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -226,20 +227,14 @@ const handlerFunc: HandlerFunc = () => ({
 
           return {
             signature,
-            amountInWei: String(amountInWei),
+            baseAmountInWei: String(amountInWei),
             nonce,
             timestampNow,
             timestampLimit,
             dateLimit,
           };
         } catch (err) {
-          services.changeStats(network, (stats) => ({
-            errorCount: ++stats.errorCount,
-            lastError: parseError(err),
-            lastErrorStack: parseStack(err),
-            lastErrorDate: new Date(),
-          }));
-
+          monitoringError(network, services, err);
           throw err;
         }
       },
@@ -268,13 +263,7 @@ const handlerFunc: HandlerFunc = () => ({
           const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId);
           return Number(nonceRaw);
         } catch (err) {
-          services.changeStats(network, (stats) => ({
-            errorCount: ++stats.errorCount,
-            lastError: parseError(err),
-            lastErrorStack: parseStack(err),
-            lastErrorDate: new Date(),
-          }));
-
+          monitoringError(network, services, err);
           throw err;
         }
       },
@@ -337,20 +326,15 @@ const handlerFunc: HandlerFunc = () => ({
 
           return {
             signature,
-            amountInWei: String(amountInWei),
+            baseAmountInWei: String(amountInWei),
+            boostExchangeRateInWei: '',
             nonce,
             timestampNow,
             timestampLimit,
             dateLimit,
           };
         } catch (err) {
-          services.changeStats(network, (stats) => ({
-            errorCount: ++stats.errorCount,
-            lastError: parseError(err),
-            lastErrorStack: parseStack(err),
-            lastErrorDate: new Date(),
-          }));
-
+          monitoringError(network, services, err);
           throw err;
         }
       },
@@ -361,8 +345,9 @@ const handlerFunc: HandlerFunc = () => ({
         network: { type: 'string' },
         contractAddress: { type: 'string' },
         account: { type: 'string' },
-        amount: { type: 'number' },
+        baseAmount: { type: 'number' },
         boost: { type: 'boolean' },
+        boostExchangeRate: { type: 'number' },
         transactionId: { type: 'string' },
       } as HandlerParams<GetSQRpProRataDepositSignatureParams>,
       async handler(
@@ -374,7 +359,7 @@ const handlerFunc: HandlerFunc = () => ({
           const network = checkIfNetwork(ctx?.params?.network);
           const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
           const account = checkIfAddress(ctx?.params?.account);
-          const { transactionId, amount, boost } = ctx?.params;
+          const { baseAmount, transactionId, boost, boostExchangeRate } = ctx?.params;
           const context = services.getNetworkContext(network);
           if (!context) {
             throw new MissingServicePrivateKey();
@@ -418,13 +403,15 @@ const handlerFunc: HandlerFunc = () => ({
               .toDate();
           }
 
-          const amountInWei = toWeiWithFixed(amount, decimals);
+          const amountInWei = toWeiWithFixed(baseAmount, decimals);
+          const boostExchangeRateInWei = toWei(boostExchangeRate);
 
           const signature = await signMessageForProRataDeposit(
             owner,
             account,
             amountInWei,
             boost,
+            boostExchangeRateInWei,
             nonce,
             transactionId,
             timestampLimit,
@@ -434,20 +421,15 @@ const handlerFunc: HandlerFunc = () => ({
 
           return {
             signature,
-            amountInWei: String(amountInWei),
+            baseAmountInWei: String(amountInWei),
+            boostExchangeRateInWei: String(boostExchangeRateInWei),
             nonce,
             timestampNow,
             timestampLimit,
             dateLimit,
           };
         } catch (err) {
-          services.changeStats(network, (stats) => ({
-            errorCount: ++stats.errorCount,
-            lastError: parseError(err),
-            lastErrorStack: parseStack(err),
-            lastErrorDate: new Date(),
-          }));
-
+          monitoringError(network, services, err);
           throw err;
         }
       },
@@ -476,13 +458,7 @@ const handlerFunc: HandlerFunc = () => ({
           const nonceRaw = await sqrpProRata.getAccountDepositNonce(account);
           return Number(nonceRaw);
         } catch (err) {
-          services.changeStats(network, (stats) => ({
-            errorCount: ++stats.errorCount,
-            lastError: parseError(err),
-            lastErrorStack: parseStack(err),
-            lastErrorDate: new Date(),
-          }));
-
+          monitoringError(network, services, err);
           throw err;
         }
       },
@@ -507,13 +483,7 @@ const handlerFunc: HandlerFunc = () => ({
           const balance = await babToken.balanceOf(account);
           return Boolean(balance);
         } catch (err) {
-          services.changeStats(network, (stats) => ({
-            errorCount: ++stats.errorCount,
-            lastError: parseError(err),
-            lastErrorStack: parseStack(err),
-            lastErrorDate: new Date(),
-          }));
-
+          monitoringError(network, services, err);
           throw err;
         }
       },
