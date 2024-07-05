@@ -226,41 +226,12 @@ const handlerFunc: HandlerFunc = () => ({
 
           return {
             signature,
-            baseAmountInWei: String(amountInWei),
+            amountInWei: String(amountInWei),
             nonce,
             timestampNow,
             timestampLimit,
             dateLimit,
           };
-        } catch (err) {
-          monitoringError(network, services, err);
-          throw err;
-        }
-      },
-    },
-
-    'network.payment-gateway-contract.nonce': {
-      params: {
-        network: { type: 'string' },
-        contractAddress: { type: 'string' },
-        userId: { type: 'string' },
-      } as HandlerParams<GetSQRPaymentGatewayNonceParams>,
-      async handler(ctx: Context<GetSQRPaymentGatewayNonceParams>): Promise<number> {
-        const network = checkIfNetwork(ctx?.params?.network);
-
-        try {
-          const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
-          const { userId } = ctx?.params;
-          const context = services.getNetworkContext(network);
-          if (!context) {
-            throw new MissingServicePrivateKey();
-          }
-
-          const { getSqrPaymentGateway } = context;
-
-          const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
-          const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId);
-          return Number(nonceRaw);
         } catch (err) {
           monitoringError(network, services, err);
           throw err;
@@ -279,7 +250,7 @@ const handlerFunc: HandlerFunc = () => ({
       } as HandlerParams<GetSQRPaymentGatewayDepositSignatureParams>,
       async handler(
         ctx: Context<GetSQRPaymentGatewayDepositSignatureParams>,
-      ): Promise<GetSQRpProRataDepositSignatureResponse> {
+      ): Promise<GetSQRPaymentGatewaySignatureResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -325,13 +296,42 @@ const handlerFunc: HandlerFunc = () => ({
 
           return {
             signature,
-            baseAmountInWei: String(amountInWei),
-            boostExchangeRateInWei: '',
+            amountInWei: String(amountInWei),
+
             nonce,
             timestampNow,
             timestampLimit,
             dateLimit,
           };
+        } catch (err) {
+          monitoringError(network, services, err);
+          throw err;
+        }
+      },
+    },
+
+    'network.payment-gateway-contract.nonce': {
+      params: {
+        network: { type: 'string' },
+        contractAddress: { type: 'string' },
+        userId: { type: 'string' },
+      } as HandlerParams<GetSQRPaymentGatewayNonceParams>,
+      async handler(ctx: Context<GetSQRPaymentGatewayNonceParams>): Promise<number> {
+        const network = checkIfNetwork(ctx?.params?.network);
+
+        try {
+          const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
+          const { userId } = ctx?.params;
+          const context = services.getNetworkContext(network);
+          if (!context) {
+            throw new MissingServicePrivateKey();
+          }
+
+          const { getSqrPaymentGateway } = context;
+
+          const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
+          const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId);
+          return Number(nonceRaw);
         } catch (err) {
           monitoringError(network, services, err);
           throw err;

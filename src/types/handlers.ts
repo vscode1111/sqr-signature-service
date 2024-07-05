@@ -54,7 +54,7 @@ export interface GetSQRPaymentGatewayNonceParams extends GetNetworkParams {
 
 export interface GetSQRPaymentGatewaySignatureResponse {
   signature: string;
-  baseAmountInWei: string;
+  amountInWei: string;
   nonce: number;
   timestampNow: number;
   timestampLimit: number;
