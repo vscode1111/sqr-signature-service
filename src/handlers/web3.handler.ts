@@ -139,7 +139,6 @@ const handlerFunc: HandlerFunc = () => ({
         network: { type: 'string' },
       } as HandlerParams<GetNetworkParams>,
       async handler(ctx: Context<GetBlockParams>): Promise<StatsData> {
-        ctx.broker.logger.info(`web3.handler: indexer.network.stats`);
         const network = checkIfNetwork(ctx.params.network);
         const [engineStats, servicesStats] = await Promise.all([
           services.multiSyncEngine.getStats(network),
