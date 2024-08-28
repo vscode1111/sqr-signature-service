@@ -84,3 +84,8 @@ export interface GetSQRpProRataDepositSignatureResponse {
   timestampLimit: number;
   dateLimit: Date;
 }
+
+export interface GetERC20BalanceParams extends GetNetworkParams {
+  contractAddress: string;
+  account: string;
+}
