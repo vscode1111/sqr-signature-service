@@ -7,6 +7,7 @@ import {
   checkIfAddress,
   checkIfNumber,
   toDate,
+  toNumberDecimals,
   toWei,
   toWeiWithFixed,
 } from '~common';
@@ -28,6 +29,7 @@ import {
   GetAccountParams,
   GetBlockParams,
   GetBlockResponse,
+  GetERC20BalanceParams,
   GetNetworkParams,
   GetSQRPaymentGatewayDepositSignatureParams,
   GetSQRPaymentGatewayNonceParams,
@@ -481,6 +483,40 @@ const handlerFunc: HandlerFunc = () => ({
           const babToken = getBABToken(BABT_ADDRESS);
           const balance = await babToken.balanceOf(account);
           return Boolean(balance);
+        } catch (err) {
+          monitoringError(network, services, err);
+          throw err;
+        }
+      },
+    },
+
+    'network.erc20.balance': {
+      params: {
+        network: { type: 'string', optional: true, default: 'bsc' },
+        contractAddress: { type: 'string' },
+        account: { type: 'string' },
+      } as HandlerParams<GetERC20BalanceParams>,
+      cache: {
+        ttl: 5 * 60,
+      },
+      async handler(ctx: Context<GetERC20BalanceParams>): Promise<number> {
+        const network = checkIfNetwork(ctx?.params?.network);
+        try {
+          const account = checkIfAddress(ctx?.params?.account);
+          const contractAddress = checkIfAddress(ctx?.params?.contractAddress);
+          const context = services.getNetworkContext(network);
+          if (!context) {
+            throw new MissingServicePrivateKey();
+          }
+
+          const { getErc20Token } = context;
+
+          const erc20Token = getErc20Token(contractAddress);
+          const [balance, decimals] = await Promise.all([
+            erc20Token.balanceOf(account),
+            erc20Token.decimals(),
+          ]);
+          return toNumberDecimals(balance, decimals);
         } catch (err) {
           monitoringError(network, services, err);
           throw err;
