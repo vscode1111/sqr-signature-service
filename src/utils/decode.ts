@@ -1,5 +1,6 @@
 import { Interface } from 'ethers';
-import { ApiError, decodeInput, getFunction } from '~common';
+import { ApiError } from '~common';
+import { decodeInput, getFunction } from '~common-back';
 import { CacheMachine } from '~common-service';
 import { BscScanApi } from '~services/bscScan';
 import { getCacheContractAbiKey } from './misc';

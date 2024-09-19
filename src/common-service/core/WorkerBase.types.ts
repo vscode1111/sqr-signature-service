@@ -1,5 +1,5 @@
 import { ServiceBroker } from 'moleculer';
-import { DeployNetworkKey } from '~common-service';
+import { DeployNetworkKey } from '../types';
 
 export interface WorkerBaseConfig {
   broker: ServiceBroker;
@@ -15,5 +15,6 @@ export type WorkerBaseStats = {
   executionTime: number;
   lastSuccessDate: Date;
   lastError?: string;
+  lastErrorStack?: string;
   lastErrorDate?: Date;
 };

@@ -1,7 +1,9 @@
 import 'reflect-metadata';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
-import { DB_POOL_SIZE } from '~common-service/constants';
 import { config, isBuildRun } from '../config';
+import { DB_POOL_SIZE } from '../constants';
+
+const DB_LOGGING = false;
 
 function getPrefix() {
   return isBuildRun ? 'dist' : 'src';
@@ -13,7 +15,7 @@ function getPostfix() {
 
 export const dataSourceConfigBase: PostgresConnectionOptions = {
   type: 'postgres',
-  logging: false,
+  logging: DB_LOGGING,
   synchronize: true,
   migrationsTableName: '__migrations',
   migrations: [`${getPrefix()}/db/migrations/[1234567890]*.${getPostfix()}`],
@@ -27,6 +29,7 @@ export const dataSourceConfigBase: PostgresConnectionOptions = {
   database: config.connections?.pg?.database,
   extra: {
     poolSize: DB_POOL_SIZE,
+    // poolSize: 1_000,
     connectionTimeoutMillis: 2000,
     query_timeout: 1000,
     statement_timeout: 1000,

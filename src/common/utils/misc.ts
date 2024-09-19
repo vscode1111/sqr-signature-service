@@ -28,6 +28,13 @@ export function parseStack(error: any) {
   }
 }
 
+// https://github.com/astra-net/astra-scan.backend/blob/8f9618d8d4df0976b5544b75ed5636b2ef949acd/src/indexer/rpc/transport/ws/WebSocketRPC.ts
+export function timeoutPromise(callTimeout: number) {
+  return new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(`Timeout error in ${callTimeout}ms`)), callTimeout),
+  );
+}
+
 export function incrementChangeHexChar(char: string): string {
   return (Number(`0x${char}`) + 1).toString(16).slice(-1);
 }
@@ -42,10 +49,10 @@ export function toUnixTimeUtc(value: string | Date = new Date()): number {
 }
 
 export function numberToByteArray(value: number, bytesNumber = 4): number[] {
-  var byteArray = new Array(bytesNumber).fill(0);
+  const byteArray = new Array(bytesNumber).fill(0);
 
-  for (var index = byteArray.length - 1; index >= 0; index--) {
-    var byte = value & 0xff;
+  for (let index = byteArray.length - 1; index >= 0; index--) {
+    const byte = value & 0xff;
     byteArray[index] = byte;
     value = (value - byte) / 256;
   }
@@ -54,8 +61,8 @@ export function numberToByteArray(value: number, bytesNumber = 4): number[] {
 }
 
 export function byteArrayToNumber(byteArray: number[]): number {
-  var value = 0;
-  for (var i = byteArray.length - 1; i >= 0; i--) {
+  let value = 0;
+  for (let i = byteArray.length - 1; i >= 0; i--) {
     value = value * 256 + byteArray[i];
   }
 
@@ -73,14 +80,14 @@ export async function sleep(ms: number): Promise<number> {
 export async function attempt(fn: () => Promise<any>, attempts = 3, delayMs = 1000): Promise<any> {
   try {
     return await fn();
-  } catch (e) {
+  } catch (err: any) {
     if (attempts > 0) {
-      console.log(e);
+      console.log(err);
       await sleep(delayMs);
       // console.log(`${attempts - 1} attempts left`);
       return await attempt(fn, attempts - 1, delayMs);
     } else {
-      throw e;
+      throw err;
     }
   }
 }

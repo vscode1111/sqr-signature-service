@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import { signEncodedMessage } from '~common';
+import { signEncodedMessage } from '~common-back';
 
 export async function signMessageForPaymentGatewayDeposit(
   signer: Wallet,

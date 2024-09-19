@@ -1,7 +1,20 @@
-import { DeployNetworkKey } from '~common-service';
+import { DeployNetworkKey } from '../types';
 
-const chainConfig: Record<DeployNetworkKey, { minBalance: number; nativeSymbol: string }> = {
+const chainConfig: Record<
+  DeployNetworkKey,
+  {
+    sqrDecimals: number;
+    minBalance: number;
+    nativeSymbol: string;
+  }
+> = {
+  mainnet: {
+    sqrDecimals: 8,
+    minBalance: 0.001,
+    nativeSymbol: 'ETH',
+  },
   bsc: {
+    sqrDecimals: 8,
     minBalance: 0.01,
     nativeSymbol: 'BNB',
   },

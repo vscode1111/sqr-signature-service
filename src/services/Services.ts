@@ -11,6 +11,7 @@ import {
 } from '~common-service';
 import { getSqrSignatureContext } from '~contracts';
 import { MultiSyncEngine, StatsCallback } from '~core';
+import { DataStorage } from '~db';
 import { SqrSignatureContext } from './types';
 
 export class Services extends ServicesBase implements Initialized, Started, Stopped {
@@ -19,6 +20,7 @@ export class Services extends ServicesBase implements Initialized, Started, Stop
   private sqrSignatureContexts: NetworkObject<SqrSignatureContext> | null;
 
   public multiSyncEngine: MultiSyncEngine;
+  public dataStorage!: DataStorage;
 
   constructor(broker: ServiceBroker) {
     super(broker);

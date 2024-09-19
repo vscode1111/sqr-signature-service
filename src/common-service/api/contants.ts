@@ -24,6 +24,7 @@ export const commonRoutes: ApiRouteSchema[] = modifyRoutes([
     path: '/',
     aliases: {
       'GET version': `${apiPrefix}version`,
+      'DELETE reboot': `${apiPrefix}reboot`,
     },
   },
   {
@@ -41,6 +42,18 @@ export const commonRoutes: ApiRouteSchema[] = modifyRoutes([
       'POST get-shares': `${apiPrefix}security.get-shares`,
       'POST send-share': `${apiPrefix}security.send-share`,
       'DELETE stop': `${apiPrefix}security.stop`,
+    },
+  },
+  {
+    path: '/db',
+    aliases: {
+      'GET contract-types': `${apiPrefix}contract-types`,
+      'GET networks': `${apiPrefix}networks.get-list`,
+      'GET contracts': `${apiPrefix}contracts.get-list`,
+      'GET contracts/:id': `${apiPrefix}contracts.get-item`,
+      'POST contracts': `${apiPrefix}contracts.create-item`,
+      'PUT contracts/:id': `${apiPrefix}contracts.update-item`,
+      'DELETE contracts/:id': `${apiPrefix}contracts.delete-item`,
     },
   },
 ]);

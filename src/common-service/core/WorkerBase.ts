@@ -1,17 +1,21 @@
 import { ServiceBroker } from 'moleculer';
-import { Promisable, parseError, parseStack } from '~common';
+import { Promisable, Started, Stopped, parseError, parseStack } from '~common';
 import { DeployNetworkKey, WorkerController } from '../types';
 import { logError } from '../utils';
 import { ServiceBrokerBase } from './ServiceBrokerBase';
 import { WorkerBaseStats } from './WorkerBase.types';
 
-export class WorkerBase<T = any> extends ServiceBrokerBase implements WorkerController<T> {
+export class WorkerBase<T = any>
+  extends ServiceBrokerBase
+  implements WorkerController<T>, Started, Stopped
+{
   protected network: DeployNetworkKey;
   protected workerName: string;
   protected statsDataBase!: WorkerBaseStats;
   protected tickDivider: number;
   protected started: boolean;
   // protected timeOut: number;
+  protected lastExternalRequestStats: Date;
 
   constructor(
     broker: ServiceBroker,
@@ -26,6 +30,7 @@ export class WorkerBase<T = any> extends ServiceBrokerBase implements WorkerCont
     this.tickDivider = tickDivider;
     this.started = false;
     // this.timeOut = timeOut;
+    this.lastExternalRequestStats = new Date();
     this.statsDataBase = {
       executing: false,
       successCount: 0,
@@ -36,6 +41,8 @@ export class WorkerBase<T = any> extends ServiceBrokerBase implements WorkerCont
   }
 
   async start(): Promise<void> {}
+
+  async stop(): Promise<void> {}
 
   reset(): void {}
 
@@ -59,17 +66,15 @@ export class WorkerBase<T = any> extends ServiceBrokerBase implements WorkerCont
 
       this.statsDataBase.successCount++;
       this.statsDataBase.lastSuccessDate = new Date();
-      this.statsDataBase.lastError = undefined;
-    } catch (e) {
+      // this.statsDataBase.lastError = undefined;
+    } catch (err) {
       this.statsDataBase.errorCount++;
-      const parsedError = parseError(e);
-      this.statsDataBase.lastError = parsedError;
+      this.statsDataBase.lastError = parseError(err);
       this.statsDataBase.lastErrorDate = new Date();
+      this.statsDataBase.lastErrorStack = parseStack(err);
       logError(
         this.broker,
-        `${this.workerName} error #${this.statsDataBase.errorCount}: ${parsedError} in ${parseStack(
-          e,
-        )}`,
+        `${this.workerName} error #${this.statsDataBase.errorCount}: ${this.statsDataBase.lastError} in ${this.statsDataBase.lastErrorStack}`,
       );
     }
 
@@ -86,7 +91,10 @@ export class WorkerBase<T = any> extends ServiceBrokerBase implements WorkerCont
 
   public async work(_tickId: number) {}
 
-  getStats(): Promisable<T> {
+  getStats(isExternal = false): Promisable<T> {
+    if (isExternal) {
+      this.lastExternalRequestStats = new Date();
+    }
     return this.statsDataBase as any;
   }
 }

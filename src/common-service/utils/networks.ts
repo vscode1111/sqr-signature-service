@@ -1,9 +1,9 @@
 import { Promisable } from '~common';
-import { NetworkObject } from '~common-service';
+//Do not change to '~constants', otherwise "npm run test" doesn't work
+import { deployNetworks } from '~constants/networks';
+import { NetworkObject } from '../providers';
 import { DeployNetworkKey } from '../types';
 import { objectFactory } from './objects';
-
-export const deployNetworks: DeployNetworkKey[] = ['bsc'] as const;
 
 export function networkObjectFactory<T>(fn: (network: DeployNetworkKey) => T) {
   return objectFactory(deployNetworks, fn) as NetworkObject<T>;

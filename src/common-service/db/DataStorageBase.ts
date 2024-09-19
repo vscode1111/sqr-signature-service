@@ -5,28 +5,42 @@ import { createDatabase } from 'typeorm-extension';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 import { IdLock, Promisable, Started, Stopped, toDate } from '~common';
 //Do not change to '~db', otherwise "npm run start" doesn't work
+import { deployNetworks } from '~constants/networks';
 import { Block, Contract, ContractType, Event, Network, Transaction } from '../../db/entities';
-import { DB_CONCURRENCY_COUNT, GENESIS_BLOCK_NUMBER } from '../constants';
+import { DB_EVENT_CONCURRENCY_COUNT, GENESIS_BLOCK_NUMBER } from '../constants';
 import { ServiceBrokerBase } from '../core';
-import { DeployNetworkKey, GetBlockFn, GetTransactionByHashFn, Web3Event } from '../types';
-import { deployNetworks, logInfo } from '../utils';
-import { GetContractDataFn } from './types';
-import { findContract, findContracts, findNetwork } from './utils';
+import {
+  DeployNetworkKey,
+  GetBlockFn,
+  GetTransactionByHashFn,
+  ProviderFns,
+  Web3Event,
+} from '../types';
+import { logInfo } from '../utils';
+import { FindContractsParamsBase, GetContractDataFn } from './types';
+import {
+  findContract,
+  findContracts,
+  findContractsAndCount,
+  findContractsAndCountEx,
+  findNetwork,
+} from './utils';
 
 const CREATED_DATABASE = false;
+const UPDATE_CONTRACTS_FROM_CONFIG = false;
 
 export class DataStorageBase extends ServiceBrokerBase implements Started, Stopped {
   protected dataSourceOptions: PostgresConnectionOptions;
   protected dataSource!: DataSource;
   protected networkRepository!: Repository<Network>;
+  protected blockRepository!: Repository<Block>;
   protected contractRepository!: Repository<Contract>;
   protected eventRepository!: Repository<Event>;
   protected transactionRepository!: Repository<Transaction>;
   protected isDestroyed: boolean;
   protected idLock: IdLock;
   protected getContractDataFn: GetContractDataFn;
-  protected getBlockFn!: GetBlockFn;
-  protected getTransactionByHashFn!: GetTransactionByHashFn;
+  protected providerFns: Record<DeployNetworkKey, ProviderFns>;
 
   constructor(
     broker: ServiceBroker,
@@ -39,6 +53,7 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     this.getContractDataFn = getContractDataFn;
     this.isDestroyed = false;
     this.idLock = new IdLock();
+    this.providerFns = {} as Record<DeployNetworkKey, ProviderFns>;
   }
 
   getDataSource() {
@@ -58,14 +73,17 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     await this.dataSource.initialize();
 
     this.networkRepository = this.dataSource.getRepository(Network);
+    this.blockRepository = this.dataSource.getRepository(Block);
     this.contractRepository = this.dataSource.getRepository(Contract);
     this.transactionRepository = this.dataSource.getRepository(Transaction);
     this.eventRepository = this.dataSource.getRepository(Event);
 
-    this.updateContracts(this.getContractDataFn);
+    if (UPDATE_CONTRACTS_FROM_CONFIG) {
+      this.updateContractsFromConfig(this.getContractDataFn);
+    }
   }
 
-  async updateContracts(getContractData: GetContractDataFn) {
+  async updateContractsFromConfig(getContractData: GetContractDataFn) {
     await this.dataSource.transaction(async (entityManager) => {
       const networkRepository = entityManager.getRepository(Network);
       const contractRepository = entityManager.getRepository(Contract);
@@ -109,15 +127,23 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     });
   }
 
-  setRpcFns({
+  setProviderFns({
+    network,
     getBlockFn,
     getTransactionByHashFn,
   }: {
+    network: DeployNetworkKey;
     getBlockFn: GetBlockFn;
     getTransactionByHashFn: GetTransactionByHashFn;
   }) {
-    this.getBlockFn = getBlockFn;
-    this.getTransactionByHashFn = getTransactionByHashFn;
+    this.providerFns[network] = {
+      getBlockFn,
+      getTransactionByHashFn,
+    };
+  }
+
+  private getProviderFns(network: string): ProviderFns {
+    return this.providerFns[network as DeployNetworkKey];
   }
 
   async start(): Promise<void> {
@@ -144,6 +170,10 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     return findNetwork(network, this.networkRepository);
   }
 
+  async getNetworks(): Promise<Network[]> {
+    return this.networkRepository.find();
+  }
+
   async getOrSaveNetwork(
     network: DeployNetworkKey,
     networkRepository: Repository<Network>,
@@ -160,12 +190,48 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     });
   }
 
-  async getContract(address: string) {
+  async getContract(id: number) {
+    return this.contractRepository.findOneBy({ id });
+  }
+
+  async createContract(contract: Partial<Contract>) {
+    return this.contractRepository.save(contract);
+  }
+
+  async updateContract(id: number, contract: Partial<Contract>) {
+    return this.contractRepository.update({ id }, contract);
+  }
+
+  async deleteContract(id: number) {
+    return this.contractRepository.delete({ id });
+  }
+
+  async getContractByAddress(address: string) {
     return this.contractRepository.findOneBy({ address });
   }
 
-  async getContracts(network?: DeployNetworkKey) {
-    return findContracts(this.contractRepository, this.networkRepository, network);
+  async getContracts(params?: FindContractsParamsBase) {
+    return findContracts({
+      contractRepository: this.contractRepository,
+      networkRepository: this.networkRepository,
+      ...params,
+    });
+  }
+
+  async getContractsAndCount(params?: FindContractsParamsBase) {
+    return findContractsAndCount({
+      contractRepository: this.contractRepository,
+      networkRepository: this.networkRepository,
+      ...params,
+    });
+  }
+
+  async getContractsAndCountEx(params?: FindContractsParamsBase) {
+    return findContractsAndCountEx({
+      contractRepository: this.contractRepository,
+      networkRepository: this.networkRepository,
+      ...params,
+    });
   }
 
   private async getOrSaveBlock(
@@ -176,7 +242,7 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     return this.idLock.tryInvoke(`block_${blockNumber}`, async () => {
       let dbBlock = await blockRepository.findOneBy({ number: blockNumber });
       if (!dbBlock) {
-        const block = await this.getBlockFn(blockNumber);
+        const block = await this.getProviderFns(dbNetwork.name).getBlockFn(blockNumber);
         dbBlock = new Block();
         dbBlock.network = dbNetwork;
         dbBlock.number = block.number;
@@ -196,7 +262,9 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     transactionRepository: Repository<Transaction>,
     dbTransaction: Transaction,
   ) {
-    const transaction = await this.getTransactionByHashFn(transactionHash);
+    const transaction = await this.getProviderFns(dbNetwork.name).getTransactionByHashFn(
+      transactionHash,
+    );
     dbTransaction.network = dbNetwork;
     dbTransaction.hash = transaction.hash;
     dbTransaction.transactionIndex = transaction.transactionIndex;
@@ -291,46 +359,44 @@ export class DataStorageBase extends ServiceBrokerBase implements Started, Stopp
     network: DeployNetworkKey;
     onProcessEvent?: (web3Event: Web3Event) => Promisable<void>;
   }): Promise<void> {
-    await this.dataSource.transaction(async (entityManager) => {
-      const networkRepository = entityManager.getRepository(Network);
-      const contractRepository = entityManager.getRepository(Contract);
-      const blockRepository = entityManager.getRepository(Block);
-      const transactionRepository = entityManager.getRepository(Transaction);
-      const eventRepository = entityManager.getRepository(Event);
+    const networkRepository = this.networkRepository;
+    const contractRepository = this.contractRepository;
+    const blockRepository = this.blockRepository;
+    const transactionRepository = this.transactionRepository;
+    const eventRepository = this.eventRepository;
 
-      const dbNetwork = await networkRepository.findOneBy({ name: network });
-      if (!dbNetwork) {
-        return;
-      }
+    const dbNetwork = await networkRepository.findOneBy({ name: network });
+    if (!dbNetwork) {
+      return;
+    }
 
-      const dbContract = await this.getContract(contractAddress);
-      if (!dbContract) {
-        return;
-      }
+    const dbContract = await this.getContractByAddress(contractAddress);
+    if (!dbContract) {
+      return;
+    }
 
-      await Bluebird.map(
-        events,
-        async (event) => {
-          const dbBlock = await this.getOrSaveBlock(dbNetwork, event.blockNumber, blockRepository);
+    await Bluebird.map(
+      events,
+      async (event) => {
+        const dbBlock = await this.getOrSaveBlock(dbNetwork, event.blockNumber, blockRepository);
 
-          const dbTransaction = await this.getOrSaveTransaction(
-            dbNetwork,
-            event.transactionHash,
-            dbBlock,
-            transactionRepository,
-          );
+        const dbTransaction = await this.getOrSaveTransaction(
+          dbNetwork,
+          event.transactionHash,
+          dbBlock,
+          transactionRepository,
+        );
 
-          if (onProcessEvent) {
-            await onProcessEvent(event);
-          }
+        if (onProcessEvent) {
+          await onProcessEvent(event);
+        }
 
-          await this.saveEvent(event, dbNetwork, dbContract, dbTransaction, eventRepository);
-        },
-        { concurrency: DB_CONCURRENCY_COUNT },
-      );
+        await this.saveEvent(event, dbNetwork, dbContract, dbTransaction, eventRepository);
+      },
+      { concurrency: DB_EVENT_CONCURRENCY_COUNT },
+    );
 
-      dbContract.syncBlockNumber = blockNumber + 1;
-      await contractRepository.save(dbContract);
-    });
+    dbContract.syncBlockNumber = blockNumber + 1;
+    await contractRepository.save(dbContract);
   }
 }

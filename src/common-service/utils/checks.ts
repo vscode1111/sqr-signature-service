@@ -1,8 +1,9 @@
 import { ApiError } from '~common';
+//Do not change to '~constants', otherwise "npm run test" doesn't work
+import { deployNetworks } from '~constants/networks';
 //Do not change "from '~db/entities'"
 import { ContractType, contractTypes } from '~db/entities';
 import { DeployNetworkKey } from '../types';
-import { deployNetworks } from './networks';
 
 const ALL_VALUE = 'all';
 

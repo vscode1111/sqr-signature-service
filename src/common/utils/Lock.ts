@@ -1,9 +1,11 @@
 import { parseError } from './misc';
 import { Promisable, StringNumber } from './types';
 
+type QueueFn = (value?: unknown) => void;
+
 export class Lock {
   private locked: boolean;
-  private queue: Function[];
+  private queue: QueueFn[];
 
   constructor() {
     this.locked = false;
@@ -38,9 +40,9 @@ export class Lock {
     await this.acquire();
     try {
       return await fn();
-    } catch (e) {
+    } catch (err: any) {
       this.release();
-      throw e;
+      throw err;
     } finally {
       this.release();
     }
@@ -83,10 +85,10 @@ export class IdLock {
     try {
       const result = await fn();
       return result;
-    } catch (e) {
+    } catch (err: any) {
       release();
-      parseError(e);
-      throw e;
+      parseError(err);
+      throw err;
     } finally {
       release();
     }
