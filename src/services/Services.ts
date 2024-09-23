@@ -5,6 +5,7 @@ import {
   JsonRpcProvider,
   NetworkObject,
   Provider,
+  SecurityBlocker,
   ServicesBase,
   config,
   networkObjectFactory,
@@ -21,6 +22,7 @@ export class Services extends ServicesBase implements Initialized, Started, Stop
 
   public multiSyncEngine: MultiSyncEngine;
   public dataStorage!: DataStorage;
+  public securityBlocker!: SecurityBlocker;
 
   constructor(broker: ServiceBroker) {
     super(broker);

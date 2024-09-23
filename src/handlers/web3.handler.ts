@@ -17,13 +17,13 @@ import {
   HandlerFunc,
   MissingServicePrivateKey,
   NotFound,
+  StatsData,
   UINT32_MAX,
   checkIfNetwork,
   commonHandlers,
   web3Constants,
 } from '~common-service';
 import { BABT_ADDRESS } from '~constants';
-import { StatsData } from '~core';
 import { services } from '~index';
 import {
   GetAccountParams,

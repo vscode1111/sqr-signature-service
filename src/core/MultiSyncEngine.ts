@@ -3,6 +3,7 @@ import {
   DeployNetworkKey,
   NetworkObject,
   ServiceBrokerBase,
+  StatsData,
   logInfo,
   networkObjectFactory,
   processNetworkObject,
@@ -10,7 +11,6 @@ import {
 import { StatsCallback } from './MonitoringWorker.types';
 import { SyncEngineConfigBase } from './MultiSyncEngine.types';
 import { SyncEngine } from './SyncEngine';
-import { StatsData } from './SyncEngine.types';
 
 export class MultiSyncEngine extends ServiceBrokerBase implements Started {
   private syncEngines: NetworkObject<SyncEngine>;
