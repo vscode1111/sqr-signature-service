@@ -6,7 +6,7 @@ import { DataStorageBase, StorageProcessor } from '../../db';
 import { Provider } from '../../providers';
 import { logInfo } from '../../utils';
 import { BlockNumberFilter } from '../BlockNumberFilter';
-import { IndexerWorkerConfig, IndexerWorkerStats } from './IndexerWorkerBase.types';
+import { IndexerWorkerBaseConfig, IndexerWorkerStats } from './IndexerWorkerBase.types';
 import { WorkerBase } from './WorkerBase';
 
 export class IndexerWorkerBase extends WorkerBase<IndexerWorkerStats> {
@@ -29,7 +29,7 @@ export class IndexerWorkerBase extends WorkerBase<IndexerWorkerStats> {
     blockNumberRange,
     blockNumberOffset,
     blockNumberFilterSize,
-  }: IndexerWorkerConfig) {
+  }: IndexerWorkerBaseConfig) {
     super(broker, network, workerName, tickDivider);
 
     this.provider = provider;
