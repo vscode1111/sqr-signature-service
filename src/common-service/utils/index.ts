@@ -5,5 +5,6 @@ export * from './context';
 export * from './log';
 export * from './networks';
 export * from './objects';
+export * from './portProcessing';
 export * from './services';
 export * from './trigger';
