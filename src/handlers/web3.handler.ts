@@ -5,7 +5,6 @@ import {
   DAYS,
   MINUTES,
   checkIfAddress,
-  checkIfNumber,
   toDate,
   toNumberDecimals,
   toWei,
@@ -28,7 +27,6 @@ import { services } from '~index';
 import {
   GetAccountParams,
   GetBlockParams,
-  GetBlockResponse,
   GetERC20BalanceParams,
   GetNetworkParams,
   GetSQRPaymentGatewayDepositSignatureParams,
@@ -66,32 +64,6 @@ const cacheMachine = new CacheMachine();
 const handlerFunc: HandlerFunc = () => ({
   actions: {
     ...commonHandlers,
-
-    'network.blocks.id': {
-      params: {
-        network: { type: 'string' },
-        id: { type: 'string' },
-      } as HandlerParams<GetBlockParams>,
-      async handler(ctx: Context<GetBlockParams>): Promise<GetBlockResponse> {
-        try {
-          const network = checkIfNetwork(ctx?.params?.network);
-          const paramId = ctx?.params.id;
-
-          let id: string | number = paramId;
-          if (paramId !== web3Constants.latest) {
-            id = checkIfNumber(ctx?.params.id);
-          }
-
-          const block = await services.getProvider(network).getBlockByNumber(id);
-          return {
-            ...block,
-            timestampDate: toDate(block.timestamp),
-          };
-        } catch (e) {
-          throw new NotFound();
-        }
-      },
-    },
 
     'network.tx': {
       params: {

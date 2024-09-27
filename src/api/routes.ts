@@ -8,8 +8,6 @@ export const routes: ApiRouteSchema[] = modifyRoutes([
   {
     path: '/:network',
     aliases: {
-      'GET addresses': `${apiPrefix}network.addresses`,
-      'GET block/:id': `${apiPrefix}network.blocks.id`,
       'GET tx/:tx': `${apiPrefix}network.tx`,
       'POST payment-gateway-contract/nonce': `${apiPrefix}network.payment-gateway-contract.nonce`,
       'POST payment-gateway-contract/deposit-signature': `${apiPrefix}network.payment-gateway-contract.deposit-signature`,
@@ -17,12 +15,6 @@ export const routes: ApiRouteSchema[] = modifyRoutes([
       'POST pro-rata-contract/nonce': `${apiPrefix}network.pro-rata-contract.nonce`,
       'POST pro-rata-contract/deposit-signature': `${apiPrefix}network.pro-rata-contract.deposit-signature`,
       'POST babt-contract/account-owns-token': `${apiPrefix}network.babt-contract.account-owns-token`,
-    },
-  },
-  {
-    path: '/indexer',
-    aliases: {
-      'GET :network/stats': `${apiPrefix}indexer.network.stats`,
     },
   },
 ]);
