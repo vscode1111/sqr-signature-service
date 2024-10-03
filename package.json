@@ -1,10 +1,10 @@
 {
-  "name": "sqr-signature-service",
-  "version": "0.0.67",
-  "description": "sqr-signature-service",
+  "name": "web3-signature-service",
+  "version": "0.0.68",
+  "description": "web3-signature-service",
   "repository": {
     "type": "git",
-    "url": "git@git.msq.local:magic-square/blockchain/sqr-signature-service.git"
+    "url": "git@git.msq.local:magic-square/blockchain/web3-signature-service.git"
   },
   "scripts": {
     "commit": "git-cz",
