@@ -54,7 +54,7 @@ module.exports = {
     vault: {
       enable: false,
       url: 'http://127.0.0.1:8200',
-      token: 'hvs.BvZIqprjR8qC42OVvr4GhdST',
+      token: '',
       baseRecord: 'secret/data/sqr-signature-service',
       ownerPrivateKeyRecord: 'ownerPrivateKey',
     },
