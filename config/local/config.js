@@ -19,7 +19,7 @@ module.exports = {
     password: 'znhcf94oi0arlz8q',
   },
   web3: {
-    ownerPrivateKey: 'e6f8fde90650d548c818fb3676987105e19b345e740429727a381b1237b31340',
+    ownerPrivateKey: '',
     apiKey: {
       bscScan: '1DW6FXAHEENVRQ6G9FI21E7CJ7NUCCM1F6', //scub111
       // bscScan: '9HKJRMFC8K1XZUP5FN68QQWS6PTTKXGQFZ', //scub111sqr-base
