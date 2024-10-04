@@ -29,12 +29,12 @@ import {
   GetBlockParams,
   GetERC20BalanceParams,
   GetNetworkParams,
-  GetSQRPaymentGatewayDepositSignatureParams,
-  GetSQRPaymentGatewayNonceParams,
-  GetSQRPaymentGatewaySignatureResponse,
-  GetSQRpProRataDepositSignatureParams,
-  GetSQRpProRataDepositSignatureResponse,
-  GetSQRpProRataNonceParams,
+  GetWEB3PaymentGatewayDepositSignatureParams,
+  GetWEB3PaymentGatewayNonceParams,
+  GetWEB3PaymentGatewaySignatureResponse,
+  GetWEB3ProRataDepositSignatureParams,
+  GetWEB3ProRataDepositSignatureResponse,
+  GetWEB3ProRataNonceParams,
   GetTxParams,
   GetTxResponse,
   HandlerParams,
@@ -130,10 +130,10 @@ const handlerFunc: HandlerFunc = () => ({
         transactionId: { type: 'string' },
         account: { type: 'string' },
         amount: { type: 'number' },
-      } as HandlerParams<GetSQRPaymentGatewayDepositSignatureParams>,
+      } as HandlerParams<GetWEB3PaymentGatewayDepositSignatureParams>,
       async handler(
-        ctx: Context<GetSQRPaymentGatewayDepositSignatureParams>,
-      ): Promise<GetSQRPaymentGatewaySignatureResponse> {
+        ctx: Context<GetWEB3PaymentGatewayDepositSignatureParams>,
+      ): Promise<GetWEB3PaymentGatewaySignatureResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -146,7 +146,7 @@ const handlerFunc: HandlerFunc = () => ({
             throw new MissingServicePrivateKey();
           }
 
-          const { owner, getErc20Token, getSqrPaymentGateway } = context;
+          const { owner, getErc20Token, getWeb3PaymentGateway } = context;
 
           let nonce = -1;
           let timestampNow = -1;
@@ -154,10 +154,10 @@ const handlerFunc: HandlerFunc = () => ({
           let dateLimit = new Date(1900, 1, 1);
           let decimals: BigNumberish = 18;
 
-          const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
+          const web3PaymentGateway = getWeb3PaymentGateway(contractAddress);
 
           if (CONSTANT_TIME_LIMIT) {
-            nonce = Number(await sqrPaymentGateway.getDepositNonce(userId));
+            nonce = Number(await web3PaymentGateway.getDepositNonce(userId));
             timestampLimit = UINT32_MAX;
           } else {
             const [block, _decimals, nonceRaw] = await Promise.all([
@@ -169,11 +169,11 @@ const handlerFunc: HandlerFunc = () => ({
               cacheMachine.call(
                 () => getCacheContractSettingKey(network, contractAddress),
                 async () => {
-                  const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
+                  const tokenAddress = await getWeb3PaymentGateway(contractAddress).erc20Token();
                   return getErc20Token(tokenAddress).decimals();
                 },
               ),
-              sqrPaymentGateway.getDepositNonce(userId),
+              web3PaymentGateway.getDepositNonce(userId),
             ]);
             decimals = _decimals;
             nonce = Number(nonceRaw);
@@ -221,10 +221,10 @@ const handlerFunc: HandlerFunc = () => ({
         transactionId: { type: 'string' },
         account: { type: 'string' },
         amount: { type: 'number' },
-      } as HandlerParams<GetSQRPaymentGatewayDepositSignatureParams>,
+      } as HandlerParams<GetWEB3PaymentGatewayDepositSignatureParams>,
       async handler(
-        ctx: Context<GetSQRPaymentGatewayDepositSignatureParams>,
-      ): Promise<GetSQRPaymentGatewaySignatureResponse> {
+        ctx: Context<GetWEB3PaymentGatewayDepositSignatureParams>,
+      ): Promise<GetWEB3PaymentGatewaySignatureResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -236,7 +236,7 @@ const handlerFunc: HandlerFunc = () => ({
             throw new MissingServicePrivateKey();
           }
 
-          const { owner, getSqrPaymentGateway, getErc20Token } = context;
+          const { owner, getWeb3PaymentGateway, getErc20Token } = context;
 
           let nonce = 0;
           let timestampNow = -1;
@@ -245,7 +245,7 @@ const handlerFunc: HandlerFunc = () => ({
           const decimals = await cacheMachine.call(
             () => getCacheContractSettingKey(network, contractAddress),
             async () => {
-              const tokenAddress = await getSqrPaymentGateway(contractAddress).erc20Token();
+              const tokenAddress = await getWeb3PaymentGateway(contractAddress).erc20Token();
               return getErc20Token(tokenAddress).decimals();
             },
           );
@@ -289,8 +289,8 @@ const handlerFunc: HandlerFunc = () => ({
         network: { type: 'string' },
         contractAddress: { type: 'string' },
         userId: { type: 'string' },
-      } as HandlerParams<GetSQRPaymentGatewayNonceParams>,
-      async handler(ctx: Context<GetSQRPaymentGatewayNonceParams>): Promise<number> {
+      } as HandlerParams<GetWEB3PaymentGatewayNonceParams>,
+      async handler(ctx: Context<GetWEB3PaymentGatewayNonceParams>): Promise<number> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -301,10 +301,10 @@ const handlerFunc: HandlerFunc = () => ({
             throw new MissingServicePrivateKey();
           }
 
-          const { getSqrPaymentGateway } = context;
+          const { getWeb3PaymentGateway } = context;
 
-          const sqrPaymentGateway = getSqrPaymentGateway(contractAddress);
-          const nonceRaw = await sqrPaymentGateway.getDepositNonce(userId);
+          const web3PaymentGateway = getWeb3PaymentGateway(contractAddress);
+          const nonceRaw = await web3PaymentGateway.getDepositNonce(userId);
           return Number(nonceRaw);
         } catch (err) {
           monitoringError(network, services, err);
@@ -322,10 +322,10 @@ const handlerFunc: HandlerFunc = () => ({
         boost: { type: 'boolean' },
         boostExchangeRate: { type: 'number' },
         transactionId: { type: 'string' },
-      } as HandlerParams<GetSQRpProRataDepositSignatureParams>,
+      } as HandlerParams<GetWEB3ProRataDepositSignatureParams>,
       async handler(
-        ctx: Context<GetSQRpProRataDepositSignatureParams>,
-      ): Promise<GetSQRpProRataDepositSignatureResponse> {
+        ctx: Context<GetWEB3ProRataDepositSignatureParams>,
+      ): Promise<GetWEB3ProRataDepositSignatureResponse> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -338,7 +338,7 @@ const handlerFunc: HandlerFunc = () => ({
             throw new MissingServicePrivateKey();
           }
 
-          const { owner, getErc20Token, getSqrpProRata } = context;
+          const { owner, getErc20Token, getWeb3pProRata } = context;
 
           let nonce = -1;
           let timestampNow = -1;
@@ -346,10 +346,10 @@ const handlerFunc: HandlerFunc = () => ({
           let dateLimit = new Date(1900, 1, 1);
           let decimals: BigNumberish = 18;
 
-          const sqrpProRata = getSqrpProRata(contractAddress);
+          const web3ProRata = getWeb3pProRata(contractAddress);
 
           if (CONSTANT_TIME_LIMIT) {
-            nonce = Number(await sqrpProRata.getAccountDepositNonce(account));
+            nonce = Number(await web3ProRata.getAccountDepositNonce(account));
             timestampLimit = UINT32_MAX;
           } else {
             const [block, _decimals, nonceRaw] = await Promise.all([
@@ -361,11 +361,11 @@ const handlerFunc: HandlerFunc = () => ({
               cacheMachine.call(
                 () => getCacheContractSettingKey(network, contractAddress),
                 async () => {
-                  const tokenAddress = await getSqrpProRata(contractAddress).baseToken();
+                  const tokenAddress = await getWeb3pProRata(contractAddress).baseToken();
                   return getErc20Token(tokenAddress).decimals();
                 },
               ),
-              sqrpProRata.getAccountDepositNonce(account),
+              web3ProRata.getAccountDepositNonce(account),
             ]);
             decimals = _decimals;
             nonce = Number(nonceRaw);
@@ -413,8 +413,8 @@ const handlerFunc: HandlerFunc = () => ({
         network: { type: 'string' },
         contractAddress: { type: 'string' },
         account: { type: 'string' },
-      } as HandlerParams<GetSQRpProRataNonceParams>,
-      async handler(ctx: Context<GetSQRpProRataNonceParams>): Promise<number> {
+      } as HandlerParams<GetWEB3ProRataNonceParams>,
+      async handler(ctx: Context<GetWEB3ProRataNonceParams>): Promise<number> {
         const network = checkIfNetwork(ctx?.params?.network);
 
         try {
@@ -425,10 +425,10 @@ const handlerFunc: HandlerFunc = () => ({
             throw new MissingServicePrivateKey();
           }
 
-          const { getSqrpProRata } = context;
+          const { getWeb3pProRata } = context;
 
-          const sqrpProRata = getSqrpProRata(contractAddress);
-          const nonceRaw = await sqrpProRata.getAccountDepositNonce(account);
+          const web3ProRata = getWeb3pProRata(contractAddress);
+          const nonceRaw = await web3ProRata.getAccountDepositNonce(account);
           return Number(nonceRaw);
         } catch (err) {
           monitoringError(network, services, err);

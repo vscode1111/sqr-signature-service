@@ -14,7 +14,7 @@ import { rawDbTable } from "../../tableNames";
 import { Event } from "./Event";
 import { Network } from "./Network";
 
-export const contractTypes = ['fcfs', 'sqrp-gated', 'white-list'] as const;
+export const contractTypes = ['fcfs', 'web3-gated', 'white-list'] as const;
 export type ContractType = (typeof contractTypes)[number];
 const DEFAULT_CONTRACT_TYPE: ContractType = 'fcfs';
 

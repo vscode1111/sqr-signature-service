@@ -1,15 +1,15 @@
 import { DeployNetworkKey, Web3ConfigContract, config } from '~common-service';
 
 export enum ContractList {
-  SQRSignature = 'SQRSignature',
+  WEB3Signature = 'WEB3Signature',
 }
 
 export const CONTRACTS: Record<ContractList, Record<DeployNetworkKey, Web3ConfigContract[]>> = {
-  SQRSignature: config.web3.contracts,
+  WEB3Signature: config.web3.contracts,
 };
 
-export const SQR_SIGNATURE = {
-  // address: CONTRACTS.SQRSignature.bsc[0].address,
+export const WEB3_SIGNATURE = {
+  // address: CONTRACTS.WEB3Signature.bsc[0].address,
   address: 'test',
   blockNumber: 41364055, //test-my2
   blockNumberMax: 40536829,

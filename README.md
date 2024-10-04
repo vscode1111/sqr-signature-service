@@ -1,5 +1,5 @@
 
-# Service for SQR signature functionality
+# Service for WEB3 signature functionality
 
 ## Getting Started
 

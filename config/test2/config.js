@@ -13,7 +13,7 @@ module.exports = {
       port: 5432,
       user: 'postgres',
       password: '461301+PG',
-      database: 'sqr-signature',
+      database: 'web3-signature',
     },
     kafka: {
       type: 'Kafka',
@@ -68,7 +68,7 @@ module.exports = {
       enable: false,
       url: 'http://127.0.0.1:8200',
       token: '',
-      baseRecord: 'secret/data/sqr-signature-service',
+      baseRecord: 'secret/data/web3-signature-service',
       ownerPrivateKeyRecord: 'ownerPrivateKey',
     },
   },

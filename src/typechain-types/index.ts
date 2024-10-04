@@ -3,10 +3,10 @@
 /* eslint-disable */
 export type { BABToken } from "./BABToken";
 export type { ERC20Token } from "./ERC20Token";
-export type { SQRPaymentGateway } from "./SQRPaymentGateway";
-export type { SQRpProRata } from "./SQRpProRata";
+export type { WEB3PaymentGateway } from "./WEB3PaymentGateway";
+export type { WEB3ProRata } from "./WEB3ProRata";
 export * as factories from "./factories";
 export { BABToken__factory } from "./factories/BABToken__factory";
 export { ERC20Token__factory } from "./factories/ERC20Token__factory";
-export { SQRPaymentGateway__factory } from "./factories/SQRPaymentGateway__factory";
-export { SQRpProRata__factory } from "./factories/SQRpProRata__factory";
+export { WEB3PaymentGateway__factory } from "./factories/WEB3PaymentGateway__factory";
+export { WEB3ProRata__factory } from "./factories/WEB3ProRata__factory";

@@ -39,7 +39,7 @@ export interface GetTxResponse {
   extra?: Record<string, any> | void;
 }
 
-export interface GetSQRPaymentGatewayDepositSignatureParams extends GetNetworkParams {
+export interface GetWEB3PaymentGatewayDepositSignatureParams extends GetNetworkParams {
   contractAddress: string;
   userId: string;
   transactionId: string;
@@ -47,12 +47,12 @@ export interface GetSQRPaymentGatewayDepositSignatureParams extends GetNetworkPa
   amount: number;
 }
 
-export interface GetSQRPaymentGatewayNonceParams extends GetNetworkParams {
+export interface GetWEB3PaymentGatewayNonceParams extends GetNetworkParams {
   contractAddress: string;
   userId: string;
 }
 
-export interface GetSQRPaymentGatewaySignatureResponse {
+export interface GetWEB3PaymentGatewaySignatureResponse {
   signature: string;
   amountInWei: string;
   nonce: number;
@@ -61,7 +61,7 @@ export interface GetSQRPaymentGatewaySignatureResponse {
   dateLimit: Date;
 }
 
-export interface GetSQRpProRataDepositSignatureParams extends GetNetworkParams {
+export interface GetWEB3ProRataDepositSignatureParams extends GetNetworkParams {
   contractAddress: string;
   account: string;
   baseAmount: number;
@@ -70,12 +70,12 @@ export interface GetSQRpProRataDepositSignatureParams extends GetNetworkParams {
   transactionId: string;
 }
 
-export interface GetSQRpProRataNonceParams extends GetNetworkParams {
+export interface GetWEB3ProRataNonceParams extends GetNetworkParams {
   contractAddress: string;
   account: string;
 }
 
-export interface GetSQRpProRataDepositSignatureResponse {
+export interface GetWEB3ProRataDepositSignatureResponse {
   signature: string;
   baseAmountInWei: string;
   boostExchangeRateInWei: string;

@@ -1,5 +1,5 @@
-docker build -t sqr-signature-service .
-docker run -d --name sqr-signature-service-01 -p 3000:3000 sqr-signature-service
+docker build -t web3-signature-service .
+docker run -d --name web3-signature-service-01 -p 3000:3000 web3-signature-service
 
 typeorm migration:create ./src/db/migrations/SoftReset
 typeorm migration:create ./src/db/migrations/HardReset

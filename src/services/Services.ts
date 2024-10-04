@@ -10,15 +10,15 @@ import {
   config,
   networkObjectFactory,
 } from '~common-service';
-import { getSqrSignatureContext } from '~contracts';
+import { getWeb3SignatureContext } from '~contracts';
 import { MultiSyncEngine, StatsCallback } from '~core';
 import { DataStorage } from '~db';
-import { SqrSignatureContext } from './types';
+import { Web3SignatureContext } from './types';
 
 export class Services extends ServicesBase implements Initialized, Started, Stopped {
   private started: boolean;
   private providers: NetworkObject<Provider>;
-  private sqrSignatureContexts: NetworkObject<SqrSignatureContext> | null;
+  private web3SignatureContexts: NetworkObject<Web3SignatureContext> | null;
 
   public multiSyncEngine: MultiSyncEngine;
   public dataStorage!: DataStorage;
@@ -37,7 +37,7 @@ export class Services extends ServicesBase implements Initialized, Started, Stop
         ),
     );
 
-    this.sqrSignatureContexts = null;
+    this.web3SignatureContexts = null;
 
     this.multiSyncEngine = new MultiSyncEngine({
       broker,
@@ -46,8 +46,8 @@ export class Services extends ServicesBase implements Initialized, Started, Stop
   }
 
   async init() {
-    this.sqrSignatureContexts = networkObjectFactory((network) =>
-      getSqrSignatureContext(network, config.web3.ownerPrivateKey!),
+    this.web3SignatureContexts = networkObjectFactory((network) =>
+      getWeb3SignatureContext(network, config.web3.ownerPrivateKey!),
     );
     await this.start();
   }
@@ -70,7 +70,7 @@ export class Services extends ServicesBase implements Initialized, Started, Stop
   }
 
   getNetworkContext(network: DeployNetworkKey) {
-    return this.sqrSignatureContexts?.[network];
+    return this.web3SignatureContexts?.[network];
   }
 
   changeStats(network: DeployNetworkKey, callback: StatsCallback) {
